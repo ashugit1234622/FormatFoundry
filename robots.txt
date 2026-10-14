@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap directive requires PUBLIC_SITE_URL build environment variable.
+# Example: PUBLIC_SITE_URL=https://your-domain.com npm run build

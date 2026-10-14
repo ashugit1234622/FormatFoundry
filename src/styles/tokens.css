@@ -1,0 +1,58 @@
+:root {
+  --color-canvas: #f8f7f2;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f2f0e8;
+  --color-surface-muted: #eae7dc;
+  
+  --color-text-main: #1f1e1c;
+  --color-text-secondary: #595752;
+  --color-text-tertiary: #87847b;
+
+  --color-border-subtle: #e2dfd5;
+  --color-border-strong: #c8c4b7;
+
+  --color-accent: #2b4c6f;
+  --color-accent-hover: #1e3650;
+  --color-accent-subtle: #edf3f9;
+
+  --color-danger: #8a2e2b;
+  --color-danger-subtle: #fbf0f0;
+  --color-danger-border: #e8c4c2;
+
+  --color-badge-bg: #eceae1;
+  --color-badge-text: #45433d;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+  --font-size-xs: 0.8125rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-md: 1.125rem;
+  --font-size-lg: 1.375rem;
+  --font-size-xl: 1.75rem;
+  --font-size-xxl: 2.125rem;
+
+  --line-height-tight: 1.25;
+  --line-height-base: 1.5;
+  --line-height-relaxed: 1.625;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  --max-content-width: 1060px;
+}

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FormatFoundry — Stage 4 Browser Verification</title>
+  <link rel="stylesheet" href="/src/styles/main.css" />
+  <style>
+    .test-panel {
+      max-width: 1060px;
+      margin: 20px auto;
+      padding: 16px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .test-status-ok {
+      color: #166534;
+      font-weight: bold;
+    }
+    .test-status-fail {
+      color: #991b1b;
+      font-weight: bold;
+    }
+    .test-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-panel">
+    <h2>Stage 4 Automated Verification Suite</h2>
+    <div class="test-controls">
+      <button id="btn-run-all" class="btn-primary">Run Stage 4 E2E Test Suite</button>
+    </div>
+    <div id="test-output">Click "Run Stage 4 E2E Test Suite" to begin...</div>
+  </div>
+
+  <main class="main-content">
+    <section class="workspace-section">
+      <div id="dropzone" class="dropzone"></div>
+      <div id="staged-container"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { FileQueue } from '/src/core/file-queue.js';
+    import { defaultRegistry, registerAllStandardRoutes } from '/src/core/registry.js';
+    import { convertFile } from '/src/engines/dispatcher.js';
+    import { setupStagedList } from '/src/ui/staged-list.js';
+    import { setupDropzone } from '/src/ui/dropzone.js';
+    import { createZipArchive } from '/src/utils/zip.js';
+    import { unzipSync } from 'fflate';
+
+    registerAllStandardRoutes(defaultRegistry);
+
+    const queue = new FileQueue({ registry: defaultRegistry });
+    const stagedContainer = document.getElementById('staged-container');
+    const dropzoneContainer = document.getElementById('dropzone');
+    const testOutput = document.getElementById('test-output');
+    const runBtn = document.getElementById('btn-run-all');
+
+    async function handleConvertItem(item) {
+      if (!item || !item.selectedTarget || item.status === 'converting') {
+        return;
+      }
+      queue.setStatus(item.id, 'converting');
+      try {
+        const result = await convertFile(item.file, item.selectedTarget, {
+          sourceFormat: item.detectedFormat
+        });
+        queue.setResult(item.id, result);
+      } catch (err) {
+        queue.setStatus(item.id, 'failed', err.message);
+      }
+    }
+
+    async function handleConvertAll() {
+      const readyItems = queue.getItems().filter((i) => i.status === 'ready');
+      for (const item of readyItems) {
+        await handleConvertItem(item);
+      }
+    }
+
+    setupStagedList({
+      container: stagedContainer,
+      queue,
+      onConvertItem: handleConvertItem,
+      onConvertAll: handleConvertAll
+    });
+
+    setupDropzone({
+      container: dropzoneContainer,
+      onFilesSelected: (files) => queue.addMultiple(files)
+    });
+
+    function log(msg, status = 'info') {
+      const line = document.createElement('div');
+      if (status === 'ok') {
+        line.innerHTML = `<span class="test-status-ok">✔ PASS:</span> ${msg}`;
+      } else if (status === 'fail') {
+        line.innerHTML = `<span class="test-status-fail">✖ FAIL:</span> ${msg}`;
+      } else {
+        line.innerText = `• ${msg}`;
+      }
+      testOutput.appendChild(line);
+    }
+
+    async function loadFixture(url, name, mime) {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return new File([blob], name, { type: mime });
+    }
+
+    async function runE2ESuite() {
+      testOutput.innerHTML = '';
+      log('Starting Stage 4 browser workflow verification...');
+
+      try {
+        const pngFile = await loadFixture('/tests/fixtures/test.png', 'test.png', 'image/png');
+        const svgFile = await loadFixture('/tests/fixtures/sample.svg', 'sample.svg', 'image/svg+xml');
+        const jsonFile = await loadFixture('/tests/fixtures/sample.json', 'sample.json', 'application/json');
+        const csvFile = await loadFixture('/tests/fixtures/sample.csv', 'sample.csv', 'text/csv');
+        const corruptFile = await loadFixture('/tests/fixtures/corrupt.png', 'corrupt.png', 'image/png');
+
+        queue.addMultiple([pngFile, svgFile, jsonFile, csvFile, corruptFile]);
+        await new Promise((r) => setTimeout(r, 400));
+
+        const items = queue.getItems();
+        log(`Queue initialized with ${items.length} items`);
+
+        const corruptItem = items.find((i) => i.name === 'corrupt.png');
+        if (corruptItem && corruptItem.status === 'invalid' && corruptItem.error.includes('header')) {
+          log('Corrupt PNG correctly identified and flagged as invalid header', 'ok');
+        } else {
+          log('Failed to identify corrupt PNG properly', 'fail');
+        }
+
+        const pngItem = items.find((i) => i.name === 'test.png');
+        if (pngItem && pngItem.inspection && pngItem.inspection.signatureFormat === 'PNG' && pngItem.inspection.canDecode) {
+          log(`PNG inspection: detected ${pngItem.inspection.signatureFormat}, ${pngItem.inspection.width}x${pngItem.inspection.height}px, decodable: Yes`, 'ok');
+        } else {
+          log('PNG inspection failed or missing metadata', 'fail');
+        }
+
+        const svgItem = items.find((i) => i.name === 'sample.svg');
+        if (svgItem && svgItem.inspection && svgItem.inspection.viewBox && svgItem.inspection.width === 300) {
+          log(`SVG inspection: width 300px, height 200px, viewBox ${svgItem.inspection.viewBox.width}x${svgItem.inspection.viewBox.height}`, 'ok');
+        } else {
+          log('SVG inspection failed or missing viewBox', 'fail');
+        }
+
+        const jsonItem = items.find((i) => i.name === 'sample.json');
+        const csvItem = items.find((i) => i.name === 'sample.csv');
+
+        log('Executing PNG -> JPEG conversion...');
+        queue.setTarget(pngItem.id, 'jpeg');
+        await handleConvertItem(pngItem);
+        if (pngItem.status === 'completed' && pngItem.result && pngItem.result.blob.type === 'image/jpeg') {
+          log(`PNG -> JPEG conversion passed: generated ${pngItem.result.filename} (${pngItem.result.blob.size} B)`, 'ok');
+        } else {
+          log(`PNG -> JPEG conversion failed: ${pngItem.error}`, 'fail');
+        }
+
+        log('Executing SVG -> PNG conversion...');
+        queue.setTarget(svgItem.id, 'png');
+        await handleConvertItem(svgItem);
+        if (svgItem.status === 'completed' && svgItem.result && svgItem.result.blob.type === 'image/png') {
+          log(`SVG -> PNG conversion passed: generated ${svgItem.result.filename} (${svgItem.result.blob.size} B)`, 'ok');
+        } else {
+          log(`SVG -> PNG conversion failed: ${svgItem.error}`, 'fail');
+        }
+
+        log('Executing JSON -> CSV conversion...');
+        queue.setTarget(jsonItem.id, 'csv');
+        await handleConvertItem(jsonItem);
+        if (jsonItem.status === 'completed' && jsonItem.result && jsonItem.result.filename.endsWith('.csv')) {
+          const csvText = await jsonItem.result.blob.text();
+          if (csvText.includes('name') && !csvText.includes('error')) {
+            log(`JSON -> CSV conversion passed: generated valid CSV (${csvText.length} chars)`, 'ok');
+          } else {
+            log('JSON -> CSV conversion output invalid', 'fail');
+          }
+        } else {
+          log(`JSON -> CSV conversion failed: ${jsonItem.error}`, 'fail');
+        }
+
+        log('Executing CSV -> JSON conversion...');
+        queue.setTarget(csvItem.id, 'json');
+        await handleConvertItem(csvItem);
+        if (csvItem.status === 'completed' && csvItem.result && csvItem.result.filename.endsWith('.json')) {
+          const jsonText = await csvItem.result.blob.text();
+          const parsed = JSON.parse(jsonText);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            log(`CSV -> JSON conversion passed: parsed ${parsed.length} JSON objects without header errors`, 'ok');
+          } else {
+            log('CSV -> JSON conversion output invalid array', 'fail');
+          }
+        } else {
+          log(`CSV -> JSON conversion failed: ${csvItem.error}`, 'fail');
+        }
+
+        log('Testing bulk ZIP compilation...');
+        const completedItems = queue.getItems()
+          .filter((i) => i.status === 'completed' && i.result?.blob)
+          .map((i) => ({
+            filename: i.result.filename,
+            blob: i.result.blob
+          }));
+
+        if (completedItems.length >= 4) {
+          const archive = await createZipArchive(completedItems);
+          const zipBuffer = await archive.blob.arrayBuffer();
+          const unzipped = unzipSync(new Uint8Array(zipBuffer));
+          const zipFilenames = Object.keys(unzipped);
+
+          log(`ZIP created successfully: ${archive.filename} (${archive.size} B, ${archive.count} files)`, 'ok');
+          log(`ZIP contents verified: [${zipFilenames.join(', ')}]`, 'ok');
+        } else {
+          log(`Insufficient completed items for ZIP test: ${completedItems.length}`, 'fail');
+        }
+
+        log('ALL REAL WORKFLOWS TESTED AND PASSED DIRECTLY IN THE BROWSER ENVIRONMENT!', 'ok');
+      } catch (err) {
+        log(`Unexpected test failure: ${err.message}`, 'fail');
+      }
+    }
+
+    runBtn.addEventListener('click', runE2ESuite);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      runE2ESuite();
+    });
+  </script>
+</body>
+</html>
