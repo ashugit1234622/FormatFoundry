@@ -34,6 +34,14 @@ export async function convertImage(file, targetFormat, options = {}) {
     throw new Error('Image has invalid dimensions.');
   }
 
+  const MAX_CANVAS_DIMENSION = 32767;
+  const MAX_CANVAS_AREA = 100000000;
+
+  if (width > MAX_CANVAS_DIMENSION || height > MAX_CANVAS_DIMENSION || (width * height) > MAX_CANVAS_AREA) {
+    bitmap.close();
+    throw new Error(`Image dimensions (${width}x${height}) exceed maximum supported canvas limits.`);
+  }
+
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;

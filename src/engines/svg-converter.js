@@ -1,5 +1,6 @@
 import { sanitizeHtml } from '../utils/sanitizer.js';
 import { generateOutputFilename, formatToMime } from '../core/filename-utils.js';
+import { formatBytes } from '../core/formatters.js';
 
 export function validateAndSanitizeSvg(svgText) {
   if (typeof svgText !== 'string') {
@@ -51,6 +52,13 @@ export function parseSvgDimensions(svgText) {
     throw new Error('SVG document lacks intrinsic dimensions (width, height, or valid viewBox)');
   }
 
+  const MAX_CANVAS_DIMENSION = 32767;
+  const MAX_CANVAS_AREA = 100000000;
+
+  if (width > MAX_CANVAS_DIMENSION || height > MAX_CANVAS_DIMENSION || (width * height) > MAX_CANVAS_AREA) {
+    throw new Error(`SVG dimensions (${Math.round(width)}x${Math.round(height)}) exceed maximum supported canvas limits`);
+  }
+
   const aspectRatio = (width / height).toFixed(2);
 
   return {
@@ -88,32 +96,35 @@ export async function convertSvg(file, targetFormat, options = {}) {
   const svgBlob = new Blob([sanitizedSvg], { type: 'image/svg+xml;charset=utf-8' });
   const svgUrl = URL.createObjectURL(svgBlob);
 
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
+  let canvas;
+  try {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
 
-  await new Promise((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = () => reject(new Error('Browser failed to render SVG image'));
-    img.src = svgUrl;
-  });
+    await new Promise((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error('Browser failed to render SVG image'));
+      img.src = svgUrl;
+    });
 
-  const canvas = document.createElement('canvas');
-  canvas.width = dimensions.width;
-  canvas.height = dimensions.height;
+    canvas = document.createElement('canvas');
+    canvas.width = dimensions.width;
+    canvas.height = dimensions.height;
 
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Failed to acquire 2D canvas context for SVG rasterization');
+    }
+
+    if (targetFormat === 'jpeg') {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+    }
+
+    ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height);
+  } finally {
     URL.revokeObjectURL(svgUrl);
-    throw new Error('Failed to acquire 2D canvas context for SVG rasterization');
   }
-
-  if (targetFormat === 'jpeg') {
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, dimensions.width, dimensions.height);
-  }
-
-  ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height);
-  URL.revokeObjectURL(svgUrl);
 
   const quality = typeof options.quality === 'number' ? Math.max(0.1, Math.min(1.0, options.quality)) : 0.92;
 
@@ -146,6 +157,8 @@ export async function convertSvg(file, targetFormat, options = {}) {
     url,
     filename,
     size: resultBlob.size,
+    sizeFormatted: formatBytes(resultBlob.size),
+    mimeType: resultBlob.type,
     format: targetFormat,
     dimensions
   };

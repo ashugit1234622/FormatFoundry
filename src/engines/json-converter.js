@@ -1,4 +1,5 @@
 import { generateOutputFilename } from '../core/filename-utils.js';
+import { formatBytes } from '../core/formatters.js';
 
 export function parseJsonSafely(text) {
   if (typeof text !== 'string') {
@@ -55,6 +56,8 @@ export async function convertJson(file, targetFormat = 'json-pretty') {
     url,
     filename,
     size: blob.size,
+    sizeFormatted: formatBytes(blob.size),
+    mimeType: blob.type,
     format: 'json'
   };
 }

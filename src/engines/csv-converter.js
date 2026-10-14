@@ -216,15 +216,24 @@ export function csvToJson(text, delimiter = ',') {
     return emptyResult;
   }
 
+  const unevenRows = [];
   const results = [];
   for (let r = 0; r < dataRows.length; r++) {
     const row = dataRows[r];
+    if (row.length < effectiveColCount) {
+      unevenRows.push(r + 1);
+    }
     const obj = {};
     for (let c = 0; c < effectiveColCount; c++) {
       const header = finalHeaders[c];
       obj[header] = row[c] !== undefined ? row[c] : '';
     }
     results.push(obj);
+  }
+
+  if (unevenRows.length > 0) {
+    const rowList = unevenRows.slice(0, 5).join(', ') + (unevenRows.length > 5 ? ` and ${unevenRows.length - 5} more` : '');
+    warnings.push(`Detected uneven row width at row(s) ${rowList}. Missing trailing columns were filled with empty values.`);
   }
 
   Object.defineProperty(results, 'warnings', {
@@ -271,15 +280,27 @@ export function inspectJsonStructure(jsonInput) {
 
   if (Array.isArray(data)) {
     const allObjects = data.every((item) => item && typeof item === 'object' && !Array.isArray(item));
+    const allPrimitives = data.every((item) => item === null || typeof item !== 'object');
+    let description = '';
+    let structureType = 'array-of-objects';
+
+    if (allObjects) {
+      structureType = 'array-of-objects';
+      description = `Array of ${data.length} object${data.length === 1 ? '' : 's'}`;
+    } else if (allPrimitives) {
+      structureType = 'array-of-primitives';
+      description = `Array of ${data.length} primitive value${data.length === 1 ? '' : 's'} (will convert to 1-column table)`;
+    } else {
+      structureType = 'array-mixed';
+      description = `Array of ${data.length} items (mixed types)`;
+    }
+
     return {
-      valid: true,
-      structureType: 'array-of-objects',
-      allObjects,
+      valid: allObjects || allPrimitives,
+      structureType,
       recordCount: data.length,
       candidateArrays: [],
-      description: allObjects
-        ? `Array of ${data.length} object${data.length === 1 ? '' : 's'}`
-        : `Array of ${data.length} items`
+      description
     };
   }
 
@@ -370,14 +391,20 @@ export function jsonToCsv(jsonInput, delimiter = ',', options = {}) {
       }
       return '';
     }
-    for (let i = 0; i < data.length; i++) {
-      const item = data[i];
-      if (!item || typeof item !== 'object' || Array.isArray(item)) {
-        const itemType = item === null ? 'null' : (Array.isArray(item) ? 'array' : typeof item);
-        throw new Error(`JSON to ${label} requires each array item to be a plain object (item at index ${i} is ${itemType})`);
+    const allPrimitives = data.every((item) => item === null || typeof item !== 'object');
+    if (allPrimitives) {
+      warnings.push('Converted array of primitive values into a single-column table with header "value".');
+      records = data.map((item) => ({ value: item !== null && item !== undefined ? item : '' }));
+    } else {
+      for (let i = 0; i < data.length; i++) {
+        const item = data[i];
+        if (!item || typeof item !== 'object' || Array.isArray(item)) {
+          const itemType = item === null ? 'null' : (Array.isArray(item) ? 'array' : typeof item);
+          throw new Error(`JSON to ${label} requires each array item to be a plain object (item at index ${i} is ${itemType})`);
+        }
       }
+      records = data;
     }
-    records = data;
   } else {
     const candidateArrays = [];
     const otherKeys = [];
@@ -432,30 +459,32 @@ export function jsonToCsv(jsonInput, delimiter = ',', options = {}) {
     }
   }
 
-  if (options.warningsRef && warnings.length > 0) {
-    options.warningsRef.push(...warnings);
-  }
-
   if (records.length === 0) {
+    if (options.warningsRef && warnings.length > 0) {
+      options.warningsRef.push(...warnings);
+    }
     return '';
   }
 
-  for (let i = 0; i < records.length; i++) {
-    const record = records[i];
-    if (!record || typeof record !== 'object' || Array.isArray(record)) {
-      const itemType = record === null ? 'null' : (Array.isArray(record) ? 'array' : typeof record);
-      throw new Error(`JSON to ${label} requires each array item to be a plain object (item at index ${i} is ${itemType})`);
-    }
-  }
-
   const headerSet = new Set();
+  const emptyKeyMap = new Map();
+  let unnamedCount = 0;
+
   for (let i = 0; i < records.length; i++) {
     const record = records[i];
     for (const key of Object.keys(record)) {
       if (typeof key !== 'string' || key.trim() === '') {
-        throw new Error(`JSON object contains empty or whitespace-only key name in record at index ${i}`);
+        if (!emptyKeyMap.has(key)) {
+          unnamedCount++;
+          const fallback = `column_unnamed_${unnamedCount}`;
+          emptyKeyMap.set(key, fallback);
+          warnings.push(`Property with empty key name in record ${i + 1} assigned fallback header "${fallback}".`);
+        }
+        const fallback = emptyKeyMap.get(key);
+        headerSet.add(fallback);
+      } else {
+        headerSet.add(key);
       }
-      headerSet.add(key);
     }
   }
 
@@ -469,13 +498,35 @@ export function jsonToCsv(jsonInput, delimiter = ',', options = {}) {
 
   for (const record of records) {
     const row = headers.map((header) => {
-      const val = Object.prototype.hasOwnProperty.call(record, header) ? record[header] : '';
+      let val = '';
+      if (Object.prototype.hasOwnProperty.call(record, header)) {
+        val = record[header];
+      } else {
+        for (const [emptyKey, fallback] of emptyKeyMap.entries()) {
+          if (header === fallback && Object.prototype.hasOwnProperty.call(record, emptyKey)) {
+            val = record[emptyKey];
+            break;
+          }
+        }
+      }
       return escapeDelimitedCell(val, delimiter);
     });
     lines.push(row.join(delimiter));
   }
 
-  return lines.join('\r\n');
+  const outputString = lines.join('\r\n');
+
+  try {
+    parseDelimited(outputString, delimiter);
+  } catch (err) {
+    throw new Error(`Generated ${label} output validation failed: ${err.message}`);
+  }
+
+  if (options.warningsRef && warnings.length > 0) {
+    options.warningsRef.push(...warnings);
+  }
+
+  return outputString;
 }
 
 export function csvToTsv(csvText) {

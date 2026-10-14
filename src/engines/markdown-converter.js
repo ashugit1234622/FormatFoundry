@@ -1,6 +1,7 @@
 import { marked } from 'marked';
 import { sanitizeHtml } from '../utils/sanitizer.js';
 import { generateOutputFilename } from '../core/filename-utils.js';
+import { formatBytes } from '../core/formatters.js';
 
 export function markdownToHtml(markdownText, { title = 'Converted Document' } = {}) {
   if (typeof markdownText !== 'string') {
@@ -116,6 +117,8 @@ export async function convertMarkdown(file, targetFormat = 'html') {
     url,
     filename,
     size: blob.size,
+    sizeFormatted: formatBytes(blob.size),
+    mimeType: blob.type,
     format: 'html'
   };
 }

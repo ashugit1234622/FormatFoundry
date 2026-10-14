@@ -234,7 +234,21 @@ test('jsonToCsv: handles multiple candidate arrays requiring explicit selection'
   assert.ok(warnings[0].includes('airlines'));
 });
 
-test('jsonToCsv: rejects invalid shapes, primitives, non-object array items, and empty inputs', () => {
+test('jsonToCsv: converts primitive arrays into a single-column table with value header and warning', () => {
+  const warnings = [];
+  const csv = jsonToCsv('[1, 2, 3]', ',', { warningsRef: warnings });
+  const rows = parseDelimited(csv, ',');
+  assert.equal(rows.length, 4);
+  assert.deepEqual(rows[0], ['value']);
+  assert.deepEqual(rows[1], ['1']);
+  assert.deepEqual(rows[2], ['2']);
+  assert.deepEqual(rows[3], ['3']);
+  assert.equal(warnings.length, 1);
+  assert.ok(warnings[0].includes('primitive values'));
+  assert.ok(warnings[0].includes('single-column table'));
+});
+
+test('jsonToCsv: rejects invalid shapes, mixed arrays, and empty inputs', () => {
   assert.throws(
     () => jsonToCsv(123),
     (err) => {
@@ -244,7 +258,7 @@ test('jsonToCsv: rejects invalid shapes, primitives, non-object array items, and
   );
 
   assert.throws(
-    () => jsonToCsv('[1, 2, 3]'),
+    () => jsonToCsv('[1, {"name": "mixed"}]'),
     (err) => {
       assert.ok(err.message.includes('requires each array item to be a plain object'));
       return true;
@@ -260,14 +274,28 @@ test('jsonToCsv: rejects invalid shapes, primitives, non-object array items, and
   );
 });
 
-test('jsonToCsv: rejects objects with empty or whitespace-only keys', () => {
-  assert.throws(
-    () => jsonToCsv([{ '': 'value' }]),
-    (err) => {
-      assert.ok(err.message.includes('empty or whitespace-only key name'));
-      return true;
-    }
-  );
+test('jsonToCsv: handles objects with empty or whitespace-only keys with fallback headers', () => {
+  const warnings = [];
+  const csv = jsonToCsv([{ '': 'alpha', '   ': 'beta', name: 'gamma' }], ',', { warningsRef: warnings });
+  const rows = parseDelimited(csv, ',');
+  assert.equal(rows.length, 2);
+  assert.deepEqual(rows[0], ['column_unnamed_1', 'column_unnamed_2', 'name']);
+  assert.deepEqual(rows[1], ['alpha', 'beta', 'gamma']);
+  assert.equal(warnings.length, 2);
+  assert.ok(warnings[0].includes('column_unnamed_1'));
+  assert.ok(warnings[1].includes('column_unnamed_2'));
+});
+
+test('csvToJson: detects uneven rows, pads missing trailing cells with empty strings, and emits warning', () => {
+  const unevenCsv = 'id,name,role,department\r\n1,Alice,Admin,Engineering\r\n2,Bob\r\n3,Charlie,Staff';
+  const result = csvToJson(unevenCsv);
+  assert.equal(result.length, 3);
+  assert.deepEqual(result[0], { id: '1', name: 'Alice', role: 'Admin', department: 'Engineering' });
+  assert.deepEqual(result[1], { id: '2', name: 'Bob', role: '', department: '' });
+  assert.deepEqual(result[2], { id: '3', name: 'Charlie', role: 'Staff', department: '' });
+  assert.equal(result.warnings.length, 1);
+  assert.ok(result.warnings[0].includes('Detected uneven row width at row(s) 2, 3'));
+  assert.ok(result.warnings[0].includes('Missing trailing columns were filled with empty values'));
 });
 
 test('csvToTsv and tsvToCsv: convert between comma and tab delimiters preserving quotes', () => {
