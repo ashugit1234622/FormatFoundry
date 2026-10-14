@@ -1,4 +1,5 @@
 import { generateOutputFilename } from '../core/filename-utils.js';
+import { formatBytes } from '../core/formatters.js';
 
 export function parseDelimited(rawText, delimiter = ',') {
   if (typeof rawText !== 'string') {
@@ -96,7 +97,7 @@ export function csvToJson(text, delimiter = ',') {
   const label = delimiter === '\t' ? 'TSV' : 'CSV';
   const allRows = parseDelimited(text, delimiter);
 
-  const isRowBlank = (row) => row.length === 0 || (row.length === 1 && row[0].trim() === '');
+  const isRowBlank = (row) => !row || row.length === 0 || row.every((c) => (typeof c === 'string' ? c.trim() === '' : !c));
 
   let startIdx = 0;
   while (startIdx < allRows.length && isRowBlank(allRows[startIdx])) {
@@ -113,40 +114,125 @@ export function csvToJson(text, delimiter = ',') {
   }
 
   const rows = allRows.slice(startIdx, endIdx + 1);
-  const headerRow = rows[0];
-  const headers = [];
-  const seenHeaders = new Set();
+  const rawHeaderRow = rows[0];
 
-  for (let c = 0; c < headerRow.length; c++) {
-    const rawHeader = headerRow[c];
-    const header = rawHeader.trim();
-    if (header === '') {
-      throw new Error(`${label} header contains empty column name at column ${c + 1}. Please verify that all columns have names and check for extraneous commas.`);
+  const dataRows = [];
+  for (let r = 1; r < rows.length; r++) {
+    if (!isRowBlank(rows[r])) {
+      dataRows.push(rows[r]);
     }
-    if (seenHeaders.has(header)) {
-      throw new Error(`${label} contains duplicate header: "${header}" at column ${c + 1}. Column names must be unique.`);
-    }
-    seenHeaders.add(header);
-    headers.push(header);
   }
 
-  if (rows.length === 1) {
-    return [];
+  let maxCols = rawHeaderRow.length;
+  for (let r = 0; r < dataRows.length; r++) {
+    if (dataRows[r].length > maxCols) {
+      maxCols = dataRows[r].length;
+    }
+  }
+
+  if (maxCols === 0) {
+    throw new Error(`${label} file is empty`);
+  }
+
+  const headerCells = [];
+  for (let c = 0; c < maxCols; c++) {
+    headerCells.push(rawHeaderRow[c] !== undefined ? rawHeaderRow[c] : '');
+  }
+
+  const colHasData = new Array(maxCols).fill(false);
+  for (let r = 0; r < dataRows.length; r++) {
+    const row = dataRows[r];
+    for (let c = 0; c < maxCols; c++) {
+      if (row[c] !== undefined && typeof row[c] === 'string' && row[c].trim() !== '') {
+        colHasData[c] = true;
+      }
+    }
+  }
+
+  const warnings = [];
+  let effectiveColCount = maxCols;
+
+  while (effectiveColCount > 0) {
+    const lastColIdx = effectiveColCount - 1;
+    const isHeaderEmpty = headerCells[lastColIdx].trim() === '';
+    const hasData = colHasData[lastColIdx];
+
+    if (isHeaderEmpty && !hasData) {
+      warnings.push(`Empty trailing column ${lastColIdx + 1} ignored because it contains no data.`);
+      effectiveColCount--;
+    } else {
+      break;
+    }
+  }
+
+  if (effectiveColCount === 0) {
+    throw new Error(`${label} contains no column headers or data`);
+  }
+
+  const seenFinalHeaders = new Set();
+  const finalHeaders = [];
+
+  for (let c = 0; c < effectiveColCount; c++) {
+    const rawHeader = headerCells[c];
+    const trimmedHeader = rawHeader.trim();
+
+    let finalName = '';
+    if (trimmedHeader === '') {
+      let candidate = `column_${c + 1}`;
+      if (seenFinalHeaders.has(candidate)) {
+        let suffix = 2;
+        while (seenFinalHeaders.has(`${candidate}_${suffix}`)) {
+          suffix++;
+        }
+        candidate = `${candidate}_${suffix}`;
+      }
+      finalName = candidate;
+      warnings.push(`Column ${c + 1} has an empty header. Generated fallback name "${finalName}".`);
+    } else if (seenFinalHeaders.has(trimmedHeader)) {
+      let suffix = 2;
+      let candidate = `${trimmedHeader}_${suffix}`;
+      while (seenFinalHeaders.has(candidate)) {
+        suffix++;
+        candidate = `${trimmedHeader}_${suffix}`;
+      }
+      finalName = candidate;
+      warnings.push(`Duplicate header "${trimmedHeader}" at column ${c + 1} renamed to "${finalName}".`);
+    } else {
+      finalName = trimmedHeader;
+    }
+
+    seenFinalHeaders.add(finalName);
+    finalHeaders.push(finalName);
+  }
+
+  if (dataRows.length === 0) {
+    const emptyResult = [];
+    Object.defineProperty(emptyResult, 'warnings', {
+      value: warnings,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    });
+    return emptyResult;
   }
 
   const results = [];
-  for (let r = 1; r < rows.length; r++) {
-    const row = rows[r];
-    if (isRowBlank(row)) {
-      continue;
-    }
+  for (let r = 0; r < dataRows.length; r++) {
+    const row = dataRows[r];
     const obj = {};
-    for (let c = 0; c < headers.length; c++) {
-      obj[headers[c]] = row[c] !== undefined ? row[c] : '';
+    for (let c = 0; c < effectiveColCount; c++) {
+      const header = finalHeaders[c];
+      obj[header] = row[c] !== undefined ? row[c] : '';
     }
     results.push(obj);
   }
 
+  Object.defineProperty(results, 'warnings', {
+    value: warnings,
+    enumerable: false,
+    writable: true,
+    configurable: true
+  });
   return results;
 }
 
@@ -250,10 +336,12 @@ export async function convertCsvOrTsv(file, targetFormat) {
   const text = await file.text();
   let outputString = '';
   let mimeType = 'text/plain';
+  let warnings = [];
 
   if (targetFormat === 'json') {
     const isTsv = file.name?.toLowerCase().endsWith('.tsv');
     const records = csvToJson(text, isTsv ? '\t' : ',');
+    warnings = records.warnings || [];
     outputString = JSON.stringify(records, null, 2);
     mimeType = 'application/json;charset=utf-8';
   } else if (targetFormat === 'tsv') {
@@ -277,7 +365,9 @@ export async function convertCsvOrTsv(file, targetFormat) {
     url,
     filename,
     size: blob.size,
-    format: targetFormat
+    sizeFormatted: formatBytes(blob.size),
+    format: targetFormat,
+    warnings
   };
 }
 
@@ -304,6 +394,7 @@ export async function convertJsonToDelimited(file, targetFormat = 'csv') {
     url,
     filename,
     size: blob.size,
+    sizeFormatted: formatBytes(blob.size),
     format: targetFormat
   };
 }

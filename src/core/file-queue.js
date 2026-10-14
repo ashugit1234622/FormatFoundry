@@ -58,6 +58,7 @@ export class FileQueue {
       availableTargets: [],
       selectedTarget: null,
       result: null,
+      warnings: [],
       inspection: null
     };
 
@@ -187,6 +188,7 @@ export class FileQueue {
     if (item.result?.url) {
       safeRevokeUrl(item.result.url);
       item.result = null;
+      item.warnings = [];
     }
 
     item.selectedTarget = targetFormat;
@@ -222,6 +224,7 @@ export class FileQueue {
     }
 
     item.result = result;
+    item.warnings = result?.warnings || [];
     item.status = 'completed';
     item.error = null;
     this.notify();

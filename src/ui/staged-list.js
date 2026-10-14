@@ -103,6 +103,35 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
           ? `<span class="delta-size">→ ${escapeHtml(item.result.sizeFormatted)}</span>`
           : '';
 
+        let warningsHtml = '';
+        const itemWarnings = item.warnings || item.result?.warnings || [];
+        if (itemWarnings.length > 0) {
+          if (itemWarnings.length === 1) {
+            warningsHtml = `
+              <div class="item-warnings">
+                <span class="warning-badge" title="${escapeHtml(itemWarnings[0])}">
+                  <span class="warning-icon" aria-hidden="true">⚠</span>
+                  <span>${escapeHtml(itemWarnings[0])}</span>
+                </span>
+              </div>
+            `;
+          } else {
+            warningsHtml = `
+              <div class="item-warnings">
+                <details class="item-warnings-details">
+                  <summary class="warning-badge">
+                    <span class="warning-icon" aria-hidden="true">⚠</span>
+                    <span>${itemWarnings.length} column notices (click to view)</span>
+                  </summary>
+                  <ul class="warning-list">
+                    ${itemWarnings.map((w) => `<li>${escapeHtml(w)}</li>`).join('')}
+                  </ul>
+                </details>
+              </div>
+            `;
+          }
+        }
+
         let targetSelectorHtml = '';
         if (item.availableTargets && item.availableTargets.length > 0) {
           const optionsHtml = item.availableTargets
@@ -221,6 +250,7 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
                   <span class="status-badge ${statusBadgeClass}">${statusText}</span>
                   ${mismatchHtml}
                 </div>
+                ${warningsHtml}
                 ${inspectionHtml}
               </div>
             </div>

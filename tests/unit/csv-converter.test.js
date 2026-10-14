@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   parseDelimited,
   csvToJson,
@@ -74,27 +76,58 @@ test('csvToJson: preserves cell values as strings and rejects type coercion', ()
   assert.strictEqual(result[0].zero, '0');
 });
 
-test('csvToJson: rejects duplicate headers with column location', () => {
-  const duplicateCsv = 'id,name,role,name\r\n1,Alice,Admin,Alice';
-  assert.throws(
-    () => csvToJson(duplicateCsv),
-    (err) => {
-      assert.ok(err.message.includes('CSV contains duplicate header: "name" at column 4'));
-      return true;
-    }
-  );
+test('csvToJson: handles duplicate headers safely and deterministically without overwriting data', () => {
+  const duplicateCsv = 'id,name,role,name\r\n1,Alice,Admin,Alicia';
+  const result = csvToJson(duplicateCsv);
+  assert.equal(result.length, 1);
+  assert.deepEqual(result[0], {
+    id: '1',
+    name: 'Alice',
+    role: 'Admin',
+    name_2: 'Alicia'
+  });
+  assert.equal(result.warnings.length, 1);
+  assert.ok(result.warnings[0].includes('Duplicate header "name" at column 4 renamed to "name_2"'));
 });
 
-test('csvToJson: rejects empty column header name with column location', () => {
+test('csvToJson: generates fallback name for empty column header and emits non-blocking warning', () => {
   const emptyColCsv = 'id,,role\r\n1,Alice,Admin';
-  assert.throws(
-    () => csvToJson(emptyColCsv),
-    (err) => {
-      assert.ok(err.message.includes('CSV header contains empty column name at column 2'));
-      assert.ok(err.message.includes('extraneous commas'));
-      return true;
-    }
-  );
+  const result = csvToJson(emptyColCsv);
+  assert.equal(result.length, 1);
+  assert.deepEqual(result[0], {
+    id: '1',
+    column_2: 'Alice',
+    role: 'Admin'
+  });
+  assert.equal(result.warnings.length, 1);
+  assert.ok(result.warnings[0].includes('Column 2 has an empty header'));
+  assert.ok(result.warnings[0].includes('column_2'));
+});
+
+test('csvToJson: safely ignores empty trailing columns containing no data and logs warning', () => {
+  const trailingEmpty = 'id,name,role,,,\r\n1,Alice,Admin,,,\r\n2,Bob,User,,,';
+  const result = csvToJson(trailingEmpty);
+  assert.equal(result.length, 2);
+  assert.deepEqual(result[0], { id: '1', name: 'Alice', role: 'Admin' });
+  assert.deepEqual(result[1], { id: '2', name: 'Bob', role: 'User' });
+  assert.equal(result.warnings.length, 3);
+  assert.ok(result.warnings.some((w) => w.includes('Empty trailing column 4 ignored')));
+  assert.ok(result.warnings.some((w) => w.includes('Empty trailing column 5 ignored')));
+  assert.ok(result.warnings.some((w) => w.includes('Empty trailing column 6 ignored')));
+});
+
+test('csvToJson: preserves empty trailing column when it contains data and assigns fallback name', () => {
+  const trailingWithData = 'id,name,\r\n1,Alice,SecretData';
+  const result = csvToJson(trailingWithData);
+  assert.equal(result.length, 1);
+  assert.deepEqual(result[0], {
+    id: '1',
+    name: 'Alice',
+    column_3: 'SecretData'
+  });
+  assert.equal(result.warnings.length, 1);
+  assert.ok(result.warnings[0].includes('Column 3 has an empty header'));
+  assert.ok(result.warnings[0].includes('column_3'));
 });
 
 test('csvToJson: returns empty array for header-only CSV', () => {
@@ -211,6 +244,42 @@ test('convertCsvOrTsv and convertJsonToDelimited: generate valid Blobs and outpu
   const jsonResult = await convertCsvOrTsv(csvFile, 'json');
   assert.equal(jsonResult.filename, 'records.json');
   assert.equal(jsonResult.format, 'json');
+  assert.ok(jsonResult.sizeFormatted);
+  assert.ok(Array.isArray(jsonResult.warnings));
   const jsonText = await jsonResult.blob.text();
   assert.deepEqual(JSON.parse(jsonText), [{ id: '1', name: 'Alice' }]);
+});
+
+test('csvToJson: converts real-world annual-enterprise-survey-2025-financial-year-provisional-size-bands.csv without error', () => {
+  const filePath = path.resolve('tests/fixtures/annual-enterprise-survey-2025-financial-year-provisional-size-bands.csv');
+  assert.ok(fs.existsSync(filePath), 'Fixture file must exist');
+  const text = fs.readFileSync(filePath, 'utf8');
+  const result = csvToJson(text);
+  assert.equal(result.length, 23220);
+  assert.equal(result.warnings.length, 9);
+  assert.ok(result.warnings.every((w) => w.includes('Column') && w.includes('has an empty header')));
+
+  assert.equal(result[0].year, '2011');
+  assert.equal(result[0].industry_code_ANZSIC, 'A');
+  assert.equal(result[0].industry_name_ANZSIC, 'Agriculture, Forestry and Fishing');
+  assert.equal(result[0].rme_size_grp, 'a_0');
+  assert.equal(result[0].variable, 'Activity unit');
+  assert.equal(result[0].value, '46134');
+  assert.equal(result[0].unit, 'COUNT');
+  assert.equal(result[0].column_8, '');
+
+  const row17134 = result[17133];
+  assert.equal(row17134.year, '2022');
+  assert.equal(row17134.column_10, '2022');
+  assert.equal(row17134.column_11, 'B');
+  assert.equal(row17134.column_12, 'Mining');
+  assert.equal(row17134.column_13, 'c_6-9');
+  assert.equal(row17134.column_14, 'Sales, government funding, grants and subsidies');
+  assert.equal(row17134.column_15, 'C');
+  assert.equal(row17134.column_16, 'DOLLARS(millions)');
+
+  const lastRow = result[result.length - 1];
+  assert.equal(lastRow.year, '2025');
+  assert.equal(lastRow.industry_code_ANZSIC, 'all');
+  assert.equal(lastRow.value, '976077');
 });
