@@ -31,4 +31,13 @@ describe('Production Route & Asset Audit', () => {
     assert.equal(result.issuesCount, 0, `Dist audit issues: ${result.issues.join('; ')}`);
     assert.equal(result.passed, true);
   });
+
+  it('passes strict SEO release gate audit on dist directory if built', async () => {
+    const { runSeoAudit } = await import('../../scripts/audit-seo.js');
+    const distDir = path.resolve(rootDir, 'dist');
+    const result = runSeoAudit({ targetDir: distDir });
+    assert.equal(result.routesAudited, 18);
+    assert.equal(result.issuesCount, 0, `SEO audit issues: ${result.issues.join('; ')}`);
+    assert.equal(result.passed, true);
+  });
 });

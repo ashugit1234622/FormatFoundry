@@ -6,9 +6,49 @@
     <title>All File Conversion Tools — FormatFoundry</title>
     <meta
       name="description"
-      content="Browse all free, client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, JSON, CSV, TSV, and Markdown with zero file uploads and 100% privacy."
+      content="Browse all 16 client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, JSON, CSV, TSV, and Markdown locally with zero server uploads."
     />
+    <link rel="canonical" href="https://formatfoundary.9021382809as.workers.dev/tools/" />
     
+    <meta property="og:site_name" content="FormatFoundry" />
+    <meta property="og:title" content="All File Conversion Tools — FormatFoundry" />
+    <meta property="og:description" content="Browse all 16 client-side file conversion tools for raster images, vector SVGs, JSON, CSV, TSV, and Markdown." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://formatfoundary.9021382809as.workers.dev/tools/" />
+    <meta property="og:image" content="https://formatfoundary.9021382809as.workers.dev/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="All File Conversion Tools — FormatFoundry" />
+    <meta name="twitter:description" content="Browse all 16 client-side file conversion tools for raster images, vector SVGs, JSON, CSV, TSV, and Markdown." />
+    <meta name="twitter:image" content="https://formatfoundary.9021382809as.workers.dev/og-image.png" />
+    <script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "All File Conversion Tools",
+    "url": "https://formatfoundary.9021382809as.workers.dev/tools/",
+    "description": "Directory of all 16 client-side conversion tools in FormatFoundry."
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://formatfoundary.9021382809as.workers.dev/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "All Tools",
+        "item": "https://formatfoundary.9021382809as.workers.dev/tools/"
+      }
+    ]
+  }
+]
+</script>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232B4C6F' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='3'/><path d='M8 12h8M12 8v8'/></svg>" />
     <link rel="stylesheet" href="/src/styles/main.css" />
   </head>
@@ -62,14 +102,14 @@
 
       <div class="tools-directory">
         
-        <section class="tools-category-section" id="cat-image">
+        <section class="tools-category-section" data-category="image">
           <div class="tools-category-header">
             <h2 class="tools-category-title">Image Converters</h2>
             <p class="tools-category-desc">Convert between popular raster formats locally with transparency preservation and custom compression.</p>
           </div>
           <div class="tools-grid">
             
-            <a href="/png-to-jpg/" class="tool-card" aria-label="PNG to JPG Converter">
+            <a href="/png-to-jpg/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">PNG to JPG Converter</span>
@@ -80,7 +120,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/png-to-webp/" class="tool-card" aria-label="PNG to WebP Converter">
+            <a href="/png-to-webp/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">PNG to WebP Converter</span>
@@ -91,7 +131,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/jpg-to-png/" class="tool-card" aria-label="JPG to PNG Converter">
+            <a href="/jpg-to-png/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">JPG to PNG Converter</span>
@@ -102,7 +142,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/jpg-to-webp/" class="tool-card" aria-label="JPG to WebP Converter">
+            <a href="/jpg-to-webp/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">JPG to WebP Converter</span>
@@ -113,7 +153,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/webp-to-png/" class="tool-card" aria-label="WebP to PNG Converter">
+            <a href="/webp-to-png/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">WebP to PNG Converter</span>
@@ -124,7 +164,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/webp-to-jpg/" class="tool-card" aria-label="WebP to JPG Converter">
+            <a href="/webp-to-jpg/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">WebP to JPG Converter</span>
@@ -138,14 +178,14 @@
           </div>
         </section>
       
-        <section class="tools-category-section" id="cat-svg">
+        <section class="tools-category-section" data-category="svg">
           <div class="tools-category-header">
             <h2 class="tools-category-title">SVG Converters</h2>
             <p class="tools-category-desc">Rasterize scalable vector graphics to high-resolution PNG, JPG, or WebP files directly in your browser.</p>
           </div>
           <div class="tools-grid">
             
-            <a href="/svg-to-png/" class="tool-card" aria-label="SVG to PNG Converter">
+            <a href="/svg-to-png/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">SVG to PNG Converter</span>
@@ -156,7 +196,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/svg-to-jpg/" class="tool-card" aria-label="SVG to JPG Converter">
+            <a href="/svg-to-jpg/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">SVG to JPG Converter</span>
@@ -167,7 +207,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/svg-to-webp/" class="tool-card" aria-label="SVG to WebP Converter">
+            <a href="/svg-to-webp/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">SVG to WebP Converter</span>
@@ -181,14 +221,14 @@
           </div>
         </section>
       
-        <section class="tools-category-section" id="cat-data">
+        <section class="tools-category-section" data-category="data">
           <div class="tools-category-header">
             <h2 class="tools-category-title">Data Converters</h2>
             <p class="tools-category-desc">Transform structured datasets between JSON, CSV, and TSV with strict string preservation.</p>
           </div>
           <div class="tools-grid">
             
-            <a href="/json-to-csv/" class="tool-card" aria-label="JSON to CSV Converter">
+            <a href="/json-to-csv/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">JSON to CSV Converter</span>
@@ -199,7 +239,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/csv-to-json/" class="tool-card" aria-label="CSV to JSON Converter">
+            <a href="/csv-to-json/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">CSV to JSON Converter</span>
@@ -210,7 +250,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/csv-to-tsv/" class="tool-card" aria-label="CSV to TSV Converter">
+            <a href="/csv-to-tsv/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">CSV to TSV Converter</span>
@@ -221,7 +261,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/tsv-to-csv/" class="tool-card" aria-label="TSV to CSV Converter">
+            <a href="/tsv-to-csv/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">TSV to CSV Converter</span>
@@ -235,14 +275,14 @@
           </div>
         </section>
       
-        <section class="tools-category-section" id="cat-text">
+        <section class="tools-category-section" data-category="text">
           <div class="tools-category-header">
             <h2 class="tools-category-title">Text Utilities</h2>
             <p class="tools-category-desc">Compile Markdown to clean HTML or format, validate, and minify JSON payloads.</p>
           </div>
           <div class="tools-grid">
             
-            <a href="/markdown-to-html/" class="tool-card" aria-label="Markdown to HTML Converter">
+            <a href="/markdown-to-html/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">Markdown to HTML Converter</span>
@@ -253,7 +293,7 @@
               <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
             </a>
           
-            <a href="/json-formatter/" class="tool-card" aria-label="JSON Formatter &amp; Validator">
+            <a href="/json-formatter/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">JSON Formatter &amp; Validator</span>
@@ -267,14 +307,14 @@
           </div>
         </section>
       
-        <section class="tools-category-section" id="cat-inspection">
+        <section class="tools-category-section" data-category="inspection">
           <div class="tools-category-header">
             <h2 class="tools-category-title">Inspection &amp; Batch Tools</h2>
             <p class="tools-category-desc">Inspect image binary headers, verify decodability, and bundle converted files into single ZIP archives.</p>
           </div>
           <div class="tools-grid">
             
-            <a href="/image-inspector/" class="tool-card" aria-label="Image Inspector &amp; Metadata Tool">
+            <a href="/image-inspector/" class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <span class="tool-card-title">Image Inspector &amp; Metadata Tool</span>

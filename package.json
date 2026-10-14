@@ -9,8 +9,9 @@
     "prebuild": "node scripts/build-seo-pages.js",
     "dev": "vite",
     "build": "vite build",
+    "postbuild": "node scripts/audit-seo.js",
     "preview": "vite preview",
-    "audit": "node scripts/audit-routes.js",
+    "audit": "node scripts/audit-seo.js",
     "test": "node --test tests/**/*.test.js"
   },
   "devDependencies": {

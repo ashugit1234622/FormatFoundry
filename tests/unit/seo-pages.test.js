@@ -90,7 +90,13 @@ describe('Static SEO Pages and Discovery Infrastructure', () => {
 
     const samplePage = fs.readFileSync(path.resolve(rootDir, 'png-to-jpg', 'index.html'), 'utf-8');
     assert.ok(samplePage.includes('<link rel="canonical" href="https://convert.formatfoundry.dev/png-to-jpg/" />'));
+    assert.ok(samplePage.includes('property="og:title"'));
+    assert.ok(samplePage.includes('property="og:image"'));
+    assert.ok(samplePage.includes('name="twitter:card"'));
+    assert.ok(samplePage.includes('application/ld+json'));
+    assert.ok(samplePage.includes('"@type": "WebApplication"'));
+    assert.ok(samplePage.includes('"@type": "BreadcrumbList"'));
 
-    buildPages({ siteUrl: '' });
+    buildPages();
   });
 });

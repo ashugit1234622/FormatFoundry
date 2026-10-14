@@ -386,27 +386,33 @@ export const TOOLS = [
     badgeFrom: 'JSON',
     badgeTo: 'CSV',
     howToSteps: [
-      'Upload a JSON file containing a top-level array of objects.',
-      'Verify CSV is selected as the target format.',
+      'Upload a JSON file containing a top-level array of objects, single object, or record array wrapper.',
+      'Verify CSV is selected as the target format in the staged item controls.',
       'Click Convert and download your RFC 4180-compliant CSV file.'
     ],
     supportedInputs: 'JSON (.json, application/json)',
     supportedOutputs: 'CSV (.csv, text/csv), TSV (.tsv), JSON Formatting',
     features: [
-      'Deterministic header ordering extracted from object keys',
-      'RFC 4180 quote escaping for fields with commas or line breaks',
-      'Serializes nested objects and arrays safely as JSON strings',
-      'Validates top-level array structure with actionable error messages'
+      'Supports top-level record arrays, single objects, and wrapper objects (e.g. airports.json)',
+      'Deterministic header generation preserving object key order without shifting cells',
+      'Converts primitive arrays (["A", "B"]) into clean single-column tables with "value" header',
+      'Automatically assigns fallback headers (column_unnamed_N) for empty keys to avoid data loss',
+      'Serializes nested objects and child arrays safely as valid JSON string cells',
+      'Strict RFC 4180 quote escaping with output validation prior to download delivery'
     ],
-    limitations: 'Input JSON must be formatted as a top-level array of objects (e.g., [{"id": 1, "name": "Item"}]). Unstructured or primitive JSON arrays cannot be tabularized.',
+    limitations: 'Heterogeneous mixed arrays containing both primitive values and objects are rejected with clear diagnostics. Large datasets exceeding 50 MB should be partitioned before conversion.',
     faqs: [
       {
-        question: 'What shape must my JSON file have?',
-        answer: 'The JSON file must have a top-level array containing objects. Each object represents a row in the resulting CSV spreadsheet.'
+        question: 'What JSON structures can this tool convert to CSV?',
+        answer: 'FormatFoundry natively handles four primary JSON structures: (1) an array of flat objects, (2) a single object converted to a 1-row table, (3) wrapper objects containing a record array (such as {"airports": [...]}), and (4) an array of primitive values converted into a single-column table with a "value" header.'
       },
       {
-        question: 'How are commas and quotes inside JSON values handled?',
-        answer: 'FormatFoundry follows RFC 4180 standards: fields containing commas, line breaks, or double quotes are wrapped in quotation marks, and inner quotes are escaped as double-quotes ("").'
+        question: 'What happens if a JSON object has an empty key or missing properties?',
+        answer: 'Empty property names are automatically assigned deterministic fallback headers like "column_unnamed_1" with a clear warning so no cell data is lost. Records with missing properties produce empty cells in the appropriate column without shifting subsequent values.'
+      },
+      {
+        question: 'How are commas, line breaks, and quotation marks escaped in the CSV?',
+        answer: 'FormatFoundry follows RFC 4180 specifications: any cell containing commas, CRLF/LF line breaks, or double quotes is enclosed in quotation marks, and inner quotes are escaped by doubling them (""). Output is validated with a delimiter parser before completion.'
       }
     ],
     relatedTools: ['csv-to-json', 'csv-to-tsv', 'json-formatter']
@@ -433,20 +439,27 @@ export const TOOLS = [
     supportedInputs: 'CSV (.csv, text/csv)',
     supportedOutputs: 'JSON (.json, application/json), TSV (.tsv)',
     features: [
-      'Handles UTF-8 Byte Order Marks (BOM) cleanly',
-      'Supports multiline cells and escaped quotation marks',
-      'Strict string preservation preventing silent type coercion',
-      'Clear diagnostics identifying empty or duplicate column headers'
+      'Automatic UTF-8 Byte Order Mark (BOM) stripping preserving initial header names',
+      'Handles quoted commas, tabs, multiline cells, and escaped quotation marks',
+      'Assigns deterministic fallback headers (column_N) for empty headers with data',
+      'Safely ignores empty trailing columns containing no data across all rows',
+      'Deduplicates duplicate headers deterministically (e.g. name_2) to prevent data overwrite',
+      'Detects uneven row widths, pads missing trailing cells with empty values, and logs row numbers',
+      'Strict string preservation preventing silent coercion of identifiers or leading zeros'
     ],
-    limitations: 'All cell values are preserved strictly as strings to prevent unintended coercion of leading-zero identifiers (like postal codes or phone numbers).',
+    limitations: 'All cell values are preserved strictly as strings to prevent unintended coercion of leading-zero identifiers (like postal codes, phone numbers, or account numbers).',
     faqs: [
       {
-        question: 'Does this converter change numbers or dates automatically?',
-        answer: 'No. FormatFoundry strictly preserves cell values as strings to avoid corrupting leading zeros in account numbers, phone numbers, or formatted codes.'
+        question: 'How does the parser handle empty or duplicate headers in CSV files?',
+        answer: 'If a column header is empty but contains row data, FormatFoundry assigns a unique deterministic name like "column_8" and displays a non-blocking warning. Unnamed trailing columns with no data in any row are pruned. Duplicate headers are renamed (e.g. "name_2") to ensure no data is overwritten.'
       },
       {
-        question: 'Does it support CSV files saved from Microsoft Excel with a UTF-8 BOM?',
-        answer: 'Yes. FormatFoundry strips UTF-8 Byte Order Marks automatically without corrupting the first column header name.'
+        question: 'Does this converter preserve leading zeros and identifiers?',
+        answer: 'Yes. All cell values are preserved strictly as strings. Identifiers like "00123", postal codes, and literal text are never silently coerced to numbers or other JavaScript types.'
+      },
+      {
+        question: 'What happens if rows have uneven column counts?',
+        answer: 'FormatFoundry identifies uneven rows, safely pads missing trailing columns with empty strings so cell alignment is never shifted, and displays a warning listing the specific row numbers.'
       }
     ],
     relatedTools: ['json-to-csv', 'csv-to-tsv', 'tsv-to-csv']

@@ -43,19 +43,46 @@ The build generates the static output in the `dist/` directory:
 
 ---
 
-## 2. Production Domain & Canonical URL Configuration
+## 2. Production Domain & Canonical URL Strategy
 
 ### How `PUBLIC_SITE_URL` Works
-FormatFoundry uses `PUBLIC_SITE_URL` as the single source of truth for production domain configuration.
+FormatFoundry uses `PUBLIC_SITE_URL` as the single source of truth for production domain configuration across all metadata, canonical tags, sitemaps, robots.txt, and Open Graph tags.
+
+Configuration order of precedence:
+1. Shell environment variable: `PUBLIC_SITE_URL=https://formatfoundry.com npm run build`
+2. Root `.env` file: `PUBLIC_SITE_URL=https://formatfoundary.9021382809as.workers.dev`
+3. Fallback (unconfigured): Omits canonicals and sitemap to prevent invalid indexing during local development.
 
 - **Configured State (`PUBLIC_SITE_URL=https://your-domain.com`):**
-  - Generates `<link rel="canonical" href="https://your-domain.com/<path>/" />` in every HTML file.
-  - Generates `dist/sitemap.xml` containing all 18 canonical URLs with absolute paths, priority ratings, and update frequencies.
-  - Adds `Sitemap: https://your-domain.com/sitemap.xml` to `dist/robots.txt`.
+  - Generates `<link rel="canonical" href="https://your-domain.com/<path>/" />` across all 18 HTML files.
+  - Generates `<meta property="og:url" content="https://your-domain.com/<path>/" />` and Twitter card metadata.
+  - Generates `dist/sitemap.xml` with absolute URLs and reliable `<lastmod>` dates derived from source file modification timestamps.
+  - Configures `dist/robots.txt` referencing `Sitemap: https://your-domain.com/sitemap.xml`.
 - **Unconfigured State (`PUBLIC_SITE_URL` not set):**
-  - Canonical tags are omitted to prevent emitting inaccurate domains.
-  - `sitemap.xml` is omitted to prevent search engines from indexing temporary or placeholder URLs.
-  - `robots.txt` permits crawling without referencing a non-existent sitemap.
+  - Canonical and sitemap tags are omitted to prevent emitting localhost, example domains, or placeholder canonicals.
+  - `dist/sitemap.xml` is unlinked and omitted from deployment.
+  - `dist/robots.txt` permits crawling without referencing a non-existent sitemap.
+
+### Custom Domain Migration Strategy
+FormatFoundry currently operates on the Cloudflare Workers hostname `formatfoundary.9021382809as.workers.dev`. When migrating to an official custom domain (such as `formatfoundry.com` or `formatfoundry.dev`), follow this protocol to avoid duplicate-host indexing:
+
+1. **Update Origin Configuration:**
+   - Update `.env`: `PUBLIC_SITE_URL=https://formatfoundry.com`
+   - Or set the `PUBLIC_SITE_URL` environment variable in your CI/CD platform (Cloudflare Pages, GitHub Actions, Vercel).
+2. **Execute Production Build:**
+   - Run `npm run build` followed by `npm run audit`.
+   - All canonical links, Open Graph URLs, and `dist/sitemap.xml` will immediately reflect the new domain without manual page editing.
+3. **Configure 301 Permanent Redirects on Old Hostname:**
+   - In Cloudflare Dashboard for the old hostname (`formatfoundary.9021382809as.workers.dev`):
+     - Navigate to **Rules** > **Redirect Rules**.
+     - Set up an HTTP 301 redirect rule:
+       - Match: `All incoming requests`
+       - Target: `https://formatfoundry.com/${1}` (preserve request path and query string).
+       - Status code: `301 Moved Permanently`.
+   - Alternatively, if using Cloudflare Pages / Workers with custom domains, attach the custom domain to the existing project so Cloudflare can handle primary domain routing and canonicalization.
+4. **Prevent Duplicate Host Indexing:**
+   - A 301 redirect transfers search engine equity and informs Googlebot that the site has permanently moved.
+   - If the old hostname cannot be redirected, add an HTTP header `X-Robots-Tag: noindex, nofollow` on the old worker host, or rely on the updated canonical URLs (`rel="canonical"` points to the new custom domain).
 
 ---
 
@@ -150,27 +177,47 @@ FormatFoundry uses directory-based static routing (`/<slug>/index.html`). Every 
 
 ---
 
-## 5. Google Search Console & Sitemap Submission
+## 5. Google Search Console & Monitoring Readiness
 
-Once your site is live at your custom domain:
+Once your site is live at your configured production domain:
 
-1. **Verify Ownership:**
-   - Open [Google Search Console](https://search.google.com/search-console).
-   - Add a property for your domain (Domain property or URL prefix).
-   - Verify ownership using DNS TXT record (recommended) or HTML meta tag.
-2. **Submit Sitemap:**
-   - In Search Console, navigate to **Sitemaps** in the left sidebar.
-   - Enter `sitemap.xml` in the "Add a new sitemap" input.
-   - Click **Submit**.
-   - Verify that Google reports status: **Success** and identifies all 18 discovered URLs.
-3. **Inspect URLs:**
-   - Use the **URL Inspection** tool to test representative routes (e.g. `https://your-domain.com/png-to-jpg/`).
-   - Confirm Googlebot can fetch the page, render the HTML, and discover internal links.
-   - Request indexing for key landing pages if desired.
+### A. Property Setup & Domain Verification
+1. Open [Google Search Console](https://search.google.com/search-console).
+2. Choose property type:
+   - **Domain Property (Recommended):** Covers all protocols (`http://` and `https://`) and subdomains (`www` and non-www). Requires DNS TXT verification.
+   - **URL-Prefix Property:** For specific hosts (e.g. `https://formatfoundry.com`). Supports DNS TXT, HTML file upload, or HTML tag.
+3. Verification:
+   - **DNS TXT Record (Best practice):** Add the provided `google-site-verification` TXT record to your DNS provider (Cloudflare, Namecheap, Route53).
+   - **Security Warning:** Never commit Search Console verification tokens or private credential files to public git repositories.
+4. Verify ownership in Google Search Console.
+
+### B. Sitemap Submission & URL Inspection
+1. Navigate to **Sitemaps** in the left sidebar.
+2. Enter `sitemap.xml` in "Add a new sitemap" and click **Submit**.
+3. Verify the status displays **Success** and 18 discovered URLs are reported.
+4. Open the **URL Inspection** tool:
+   - Test key routes (e.g. `https://formatfoundry.com/png-to-jpg/` and `https://formatfoundry.com/json-to-csv/`).
+   - Click **Test Live URL** to confirm Googlebot can fetch the HTML, render the layout, load CSS/JS assets, and identify structured data schemas.
+   - Verify that Google recognizes the declared canonical URL as user-selected and matches Google-selected canonical.
+
+### C. Ongoing Search & Indexing Diagnostics
+- **Pages Report:** Check for any "Excluded" or "Crawled - currently not indexed" pages. Verify that canonical declarations match Google's selections.
+- **Core Web Vitals Report:** Monitor 75th-percentile field performance for real visitors (LCP <= 2.5s, INP < 200ms, CLS <= 0.1).
+- **Security & Manual Actions:** Verify "No issues detected" under Security & Manual Actions.
 
 ---
 
-## 6. Security Headers & Privacy Verification
+## 6. Bing Webmaster Tools Onboarding
+
+1. Open [Bing Webmaster Tools](https://www.bing.com/webmasters).
+2. Sign in and choose **Import from Google Search Console** (fastest, verifies instantly without additional DNS records) or add your URL prefix manually.
+3. If adding manually, verify via DNS CNAME or TXT record.
+4. Submit `https://formatfoundry.com/sitemap.xml` under **Sitemaps**.
+5. Use the **URL Inspection** tool to verify Bingbot rendering.
+
+---
+
+## 7. Security Headers & Privacy Verification
 
 FormatFoundry operates entirely on the client side. Recommended security headers to configure in your hosting provider's configuration file (e.g., `_headers` for Cloudflare/Netlify or `vercel.json`):
 
@@ -184,3 +231,13 @@ FormatFoundry operates entirely on the client side. Recommended security headers
 ```
 
 Note: `connect-src 'none'` enforces at the browser level that FormatFoundry cannot transmit file data, telemetry, or API requests to external servers, providing cryptographic defense-in-depth for the zero-upload privacy guarantee.
+
+---
+
+## 8. Ethical SEO & Long-Term Promotion Guidelines
+
+FormatFoundry adheres strictly to ethical, search-standard white-hat SEO practices:
+- **Local-Processing Guarantee:** Loading FormatFoundry HTML, CSS, JavaScript, and favicon/og-image assets constitutes ordinary static web browsing. No user files, table records, or conversion outputs are ever transmitted to any server. This difference must be clearly communicated in privacy notices.
+- **Zero Spam Policy:** Never participate in private blog networks (PBNs), automated link schemes, purchased backlinks, or mass forum posting.
+- **Legitimate Technical Outreach:** Promote FormatFoundry through high-value technical articles, open-source repositories, developer tool roundups, and workflow tutorials demonstrating client-side data privacy.
+- **Content Integrity:** Every tool page provides authentic documentation of supported features, data handling boundaries, and error recovery guidance matching the actual engine code. No doorway pages or mass-generated thin content are published.
