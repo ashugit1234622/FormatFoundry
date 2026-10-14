@@ -27,7 +27,7 @@ export async function convertFile(file, targetFormat, options = {}) {
 
   if (source === 'json') {
     if (target === 'csv' || target === 'tsv') {
-      return convertJsonToDelimited(file, target);
+      return convertJsonToDelimited(file, target, options);
     }
   }
 

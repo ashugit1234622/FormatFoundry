@@ -27,7 +27,8 @@ function init() {
 
     try {
       const result = await convertFile(item.file, item.selectedTarget, {
-        sourceFormat: item.detectedFormat
+        sourceFormat: item.detectedFormat,
+        arrayProperty: item.selectedArrayProperty || null
       });
       fileQueue.setResult(item.id, result);
     } catch (err) {

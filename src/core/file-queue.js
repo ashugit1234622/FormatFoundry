@@ -5,6 +5,7 @@ import { defaultRegistry } from './registry.js';
 import { normalizeFormat, normalizeImageFormat } from './filename-utils.js';
 import { inspectImageFile } from './image-inspector.js';
 import { validateAndSanitizeSvg, parseSvgDimensions } from '../engines/svg-converter.js';
+import { inspectJsonStructure } from '../engines/csv-converter.js';
 
 let counter = 0;
 
@@ -59,7 +60,10 @@ export class FileQueue {
       selectedTarget: null,
       result: null,
       warnings: [],
-      inspection: null
+      inspection: null,
+      jsonStructure: null,
+      candidateArrays: [],
+      selectedArrayProperty: null
     };
 
     this.items.push(item);
@@ -169,6 +173,18 @@ export class FileQueue {
           item.valid = false;
           item.error = 'No conversion targets available for this format';
         }
+
+        if (normExt === 'json' && item.file && typeof item.file.text === 'function') {
+          try {
+            const text = await item.file.text();
+            const structure = inspectJsonStructure(text);
+            item.jsonStructure = structure;
+            if (structure.candidateArrays && structure.candidateArrays.length > 0) {
+              item.candidateArrays = structure.candidateArrays;
+              item.selectedArrayProperty = structure.selectedProperty || structure.candidateArrays[0];
+            }
+          } catch {}
+        }
       } else {
         item.status = 'unsupported';
         item.valid = false;
@@ -197,6 +213,25 @@ export class FileQueue {
       item.error = null;
     }
 
+    this.notify();
+    return true;
+  }
+
+  setJsonArrayProperty(id, arrayProperty) {
+    const item = this.getItem(id);
+    if (!item) {
+      return false;
+    }
+    item.selectedArrayProperty = arrayProperty;
+    if (item.result?.url) {
+      safeRevokeUrl(item.result.url);
+      item.result = null;
+      item.warnings = [];
+    }
+    if (item.status === 'completed' || item.status === 'failed') {
+      item.status = 'ready';
+      item.error = null;
+    }
     this.notify();
     return true;
   }

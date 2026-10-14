@@ -255,9 +255,93 @@ export function escapeDelimitedCell(value, delimiter = ',') {
   return str;
 }
 
-export function jsonToCsv(jsonInput, delimiter = ',') {
+export function inspectJsonStructure(jsonInput) {
+  let data = jsonInput;
+  if (typeof jsonInput === 'string') {
+    const trimmed = jsonInput.trim();
+    if (!trimmed) {
+      return { valid: false, error: 'Empty JSON input' };
+    }
+    try {
+      data = JSON.parse(trimmed);
+    } catch (err) {
+      return { valid: false, error: err.message };
+    }
+  }
+
+  if (Array.isArray(data)) {
+    const allObjects = data.every((item) => item && typeof item === 'object' && !Array.isArray(item));
+    return {
+      valid: true,
+      structureType: 'array-of-objects',
+      allObjects,
+      recordCount: data.length,
+      candidateArrays: [],
+      description: allObjects
+        ? `Array of ${data.length} object${data.length === 1 ? '' : 's'}`
+        : `Array of ${data.length} items`
+    };
+  }
+
+  if (data && typeof data === 'object') {
+    const candidateArrays = [];
+    const otherKeys = [];
+
+    for (const key of Object.keys(data)) {
+      const val = data[key];
+      if (Array.isArray(val) && (val.length === 0 || val.every((item) => item && typeof item === 'object' && !Array.isArray(item)))) {
+        candidateArrays.push({ key, count: val.length });
+      } else {
+        otherKeys.push(key);
+      }
+    }
+
+    if (candidateArrays.length === 1) {
+      return {
+        valid: true,
+        structureType: 'wrapper-single',
+        candidateArrays: candidateArrays.map((c) => c.key),
+        selectedProperty: candidateArrays[0].key,
+        recordCount: candidateArrays[0].count,
+        otherKeys,
+        description: `Object containing record array "${candidateArrays[0].key}" (${candidateArrays[0].count} item${candidateArrays[0].count === 1 ? '' : 's'})`
+      };
+    }
+
+    if (candidateArrays.length > 1) {
+      return {
+        valid: true,
+        structureType: 'wrapper-multiple',
+        candidateArrays: candidateArrays.map((c) => c.key),
+        selectedProperty: candidateArrays[0].key,
+        candidateDetails: candidateArrays,
+        otherKeys,
+        description: `Object containing multiple record arrays: ${candidateArrays.map((c) => `"${c.key}" (${c.count})`).join(', ')}`
+      };
+    }
+
+    const keyCount = Object.keys(data).length;
+    return {
+      valid: true,
+      structureType: 'single-object',
+      candidateArrays: [],
+      recordCount: 1,
+      keyCount,
+      otherKeys: [],
+      description: `Single JSON object (${keyCount} propert${keyCount === 1 ? 'y' : 'ies'})`
+    };
+  }
+
+  return {
+    valid: false,
+    structureType: 'primitive',
+    description: `Primitive value (${data === null ? 'null' : typeof data})`
+  };
+}
+
+export function jsonToCsv(jsonInput, delimiter = ',', options = {}) {
   const label = delimiter === '\t' ? 'TSV' : 'CSV';
-  let records = jsonInput;
+  let data = jsonInput;
 
   if (typeof jsonInput === 'string') {
     const trimmed = jsonInput.trim();
@@ -265,15 +349,91 @@ export function jsonToCsv(jsonInput, delimiter = ',') {
       throw new Error(`JSON to ${label} requires valid JSON (input is empty)`);
     }
     try {
-      records = JSON.parse(trimmed);
+      data = JSON.parse(trimmed);
     } catch (err) {
       throw new Error(`JSON to ${label} requires valid JSON: ${err.message}`);
     }
   }
 
-  if (!Array.isArray(records)) {
-    const receivedType = records === null ? 'null' : typeof records;
-    throw new Error(`JSON to ${label} requires a top-level array of objects (received ${receivedType})`);
+  if (data === null || typeof data !== 'object') {
+    const receivedType = data === null ? 'null' : typeof data;
+    throw new Error(`JSON to ${label} requires an array of objects or an object (received ${receivedType})`);
+  }
+
+  const warnings = [];
+  let records = [];
+
+  if (Array.isArray(data)) {
+    if (data.length === 0) {
+      if (options.warningsRef && warnings.length > 0) {
+        options.warningsRef.push(...warnings);
+      }
+      return '';
+    }
+    for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        const itemType = item === null ? 'null' : (Array.isArray(item) ? 'array' : typeof item);
+        throw new Error(`JSON to ${label} requires each array item to be a plain object (item at index ${i} is ${itemType})`);
+      }
+    }
+    records = data;
+  } else {
+    const candidateArrays = [];
+    const otherKeys = [];
+
+    for (const key of Object.keys(data)) {
+      const val = data[key];
+      if (Array.isArray(val) && (val.length === 0 || val.every((item) => item && typeof item === 'object' && !Array.isArray(item)))) {
+        candidateArrays.push(key);
+      } else {
+        otherKeys.push(key);
+      }
+    }
+
+    const requestedProperty = options.arrayProperty || options.selectedPath;
+
+    if (requestedProperty) {
+      if (!Object.prototype.hasOwnProperty.call(data, requestedProperty)) {
+        throw new Error(`JSON object does not contain requested property "${requestedProperty}"`);
+      }
+      const targetVal = data[requestedProperty];
+      if (!Array.isArray(targetVal)) {
+        throw new Error(`Property "${requestedProperty}" in JSON object is not an array`);
+      }
+      for (let i = 0; i < targetVal.length; i++) {
+        const item = targetVal[i];
+        if (!item || typeof item !== 'object' || Array.isArray(item)) {
+          const itemType = item === null ? 'null' : (Array.isArray(item) ? 'array' : typeof item);
+          throw new Error(`Selected array "${requestedProperty}" contains non-object at index ${i} (${itemType})`);
+        }
+      }
+      records = targetVal;
+      const excludedKeys = Object.keys(data).filter((k) => k !== requestedProperty);
+      if (excludedKeys.length > 0) {
+        warnings.push(`Converted record array from property "${requestedProperty}". Root-level metadata properties (${excludedKeys.join(', ')}) were excluded from the CSV rows.`);
+      } else {
+        warnings.push(`Converted record array from property "${requestedProperty}".`);
+      }
+    } else if (candidateArrays.length > 1) {
+      throw new Error(`JSON root object contains multiple candidate record arrays: "${candidateArrays.join('", "')}". Please specify which property to convert.`);
+    } else if (candidateArrays.length === 1) {
+      const targetKey = candidateArrays[0];
+      records = data[targetKey];
+      const excludedKeys = Object.keys(data).filter((k) => k !== targetKey);
+      if (excludedKeys.length > 0) {
+        warnings.push(`Detected wrapper object. Converted record array from property "${targetKey}". Root-level metadata properties (${excludedKeys.join(', ')}) were excluded from the CSV rows.`);
+      } else {
+        warnings.push(`Detected wrapper object. Converted record array from property "${targetKey}".`);
+      }
+    } else {
+      records = [data];
+      warnings.push('Converted single JSON object into a 1-row CSV table.');
+    }
+  }
+
+  if (options.warningsRef && warnings.length > 0) {
+    options.warningsRef.push(...warnings);
   }
 
   if (records.length === 0) {
@@ -371,14 +531,15 @@ export async function convertCsvOrTsv(file, targetFormat) {
   };
 }
 
-export async function convertJsonToDelimited(file, targetFormat = 'csv') {
+export async function convertJsonToDelimited(file, targetFormat = 'csv', options = {}) {
   if (!file) {
     throw new Error('No file provided for JSON conversion');
   }
 
   const text = await file.text();
   const delimiter = targetFormat === 'tsv' ? '\t' : ',';
-  const outputString = jsonToCsv(text, delimiter);
+  const warnings = [];
+  const outputString = jsonToCsv(text, delimiter, { ...options, warningsRef: warnings });
   const mimeType = targetFormat === 'tsv'
     ? 'text/tab-separated-values;charset=utf-8'
     : 'text/csv;charset=utf-8';
@@ -395,6 +556,7 @@ export async function convertJsonToDelimited(file, targetFormat = 'csv') {
     filename,
     size: blob.size,
     sizeFormatted: formatBytes(blob.size),
-    format: targetFormat
+    format: targetFormat,
+    warnings
   };
 }

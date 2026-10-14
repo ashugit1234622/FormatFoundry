@@ -103,6 +103,10 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
           ? `<span class="delta-size">→ ${escapeHtml(item.result.sizeFormatted)}</span>`
           : '';
 
+        const structureHtml = item.jsonStructure?.description
+          ? `<span class="structure-badge" title="${escapeHtml(item.jsonStructure.description)}">${escapeHtml(item.jsonStructure.description)}</span>`
+          : '';
+
         let warningsHtml = '';
         const itemWarnings = item.warnings || item.result?.warnings || [];
         if (itemWarnings.length > 0) {
@@ -130,6 +134,25 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
               </div>
             `;
           }
+        }
+
+        let arraySelectorHtml = '';
+        if (item.candidateArrays && item.candidateArrays.length > 1) {
+          const arrayOptionsHtml = item.candidateArrays
+            .map(
+              (prop) =>
+                `<option value="${escapeHtml(prop)}" ${prop === item.selectedArrayProperty ? 'selected' : ''}>${escapeHtml(prop)}</option>`
+            )
+            .join('');
+
+          arraySelectorHtml = `
+            <div class="target-select-wrapper">
+              <label for="array-${item.id}" class="target-label">Array:</label>
+              <select id="array-${item.id}" class="target-select" data-action="change-json-array" data-id="${item.id}" ${item.status === 'converting' ? 'disabled' : ''}>
+                ${arrayOptionsHtml}
+              </select>
+            </div>
+          `;
         }
 
         let targetSelectorHtml = '';
@@ -249,12 +272,14 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
                   ${deltaSizeHtml}
                   <span class="status-badge ${statusBadgeClass}">${statusText}</span>
                   ${mismatchHtml}
+                  ${structureHtml}
                 </div>
                 ${warningsHtml}
                 ${inspectionHtml}
               </div>
             </div>
             <div class="item-controls">
+              ${arraySelectorHtml}
               ${targetSelectorHtml}
               ${actionButtonHtml}
               <button type="button" class="btn-remove" data-action="remove" data-id="${item.id}" aria-label="Remove ${safeName}">
@@ -341,6 +366,16 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
         }
       });
     }
+
+    const arraySelects = container.querySelectorAll('[data-action="change-json-array"]');
+    arraySelects.forEach((select) => {
+      select.addEventListener('change', (e) => {
+        const id = select.getAttribute('data-id');
+        if (id) {
+          queue.setJsonArrayProperty(id, e.target.value);
+        }
+      });
+    });
 
     const targetSelects = container.querySelectorAll('[data-action="change-target"]');
     targetSelects.forEach((select) => {

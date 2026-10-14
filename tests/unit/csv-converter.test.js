@@ -9,7 +9,8 @@ import {
   csvToTsv,
   tsvToCsv,
   convertCsvOrTsv,
-  convertJsonToDelimited
+  convertJsonToDelimited,
+  inspectJsonStructure
 } from '../../src/engines/csv-converter.js';
 
 test('parseDelimited: parses simple and quoted fields with commas and CRLF', () => {
@@ -174,11 +175,70 @@ test('jsonToCsv: serializes nested objects and arrays explicitly as JSON strings
   assert.equal(rows[1][2], '{"source":"api","v":2}');
 });
 
-test('jsonToCsv: requires top-level array of objects and gives clear error for invalid shapes', () => {
+test('jsonToCsv: converts a single flat object into a 1-row CSV table', () => {
+  const single = { name: 'A', city: 'Delhi' };
+  const warnings = [];
+  const csv = jsonToCsv(single, ',', { warningsRef: warnings });
+  const rows = parseDelimited(csv, ',');
+  assert.equal(rows.length, 2);
+  assert.deepEqual(rows[0], ['name', 'city']);
+  assert.deepEqual(rows[1], ['A', 'Delhi']);
+  assert.equal(warnings.length, 1);
+  assert.ok(warnings[0].includes('1-row CSV'));
+});
+
+test('jsonToCsv: converts wrapper object containing single record array with metadata warnings', () => {
+  const wrapperWithMeta = {
+    version: '1.0',
+    status: 200,
+    items: [
+      { id: 101, title: 'Item 1' },
+      { id: 102, title: 'Item 2' }
+    ]
+  };
+  const warnings = [];
+  const csv = jsonToCsv(wrapperWithMeta, ',', { warningsRef: warnings });
+  const rows = parseDelimited(csv, ',');
+  assert.equal(rows.length, 3);
+  assert.deepEqual(rows[0], ['id', 'title']);
+  assert.deepEqual(rows[1], ['101', 'Item 1']);
+  assert.deepEqual(rows[2], ['102', 'Item 2']);
+  assert.equal(warnings.length, 1);
+  assert.ok(warnings[0].includes('version'));
+  assert.ok(warnings[0].includes('status'));
+});
+
+test('jsonToCsv: handles multiple candidate arrays requiring explicit selection', () => {
+  const multi = {
+    airports: [{ code: 'ATL' }],
+    airlines: [{ code: 'DL', fleet: 800 }]
+  };
+
   assert.throws(
-    () => jsonToCsv('{"single": "object"}'),
+    () => jsonToCsv(multi),
     (err) => {
-      assert.ok(err.message.includes('requires a top-level array of objects'));
+      assert.ok(err.message.includes('multiple candidate record arrays'));
+      assert.ok(err.message.includes('airports'));
+      assert.ok(err.message.includes('airlines'));
+      return true;
+    }
+  );
+
+  const warnings = [];
+  const csv = jsonToCsv(multi, ',', { arrayProperty: 'airlines', warningsRef: warnings });
+  const rows = parseDelimited(csv, ',');
+  assert.equal(rows.length, 2);
+  assert.deepEqual(rows[0], ['code', 'fleet']);
+  assert.deepEqual(rows[1], ['DL', '800']);
+  assert.equal(warnings.length, 1);
+  assert.ok(warnings[0].includes('airlines'));
+});
+
+test('jsonToCsv: rejects invalid shapes, primitives, non-object array items, and empty inputs', () => {
+  assert.throws(
+    () => jsonToCsv(123),
+    (err) => {
+      assert.ok(err.message.includes('requires an array of objects or an object'));
       return true;
     }
   );
@@ -282,4 +342,39 @@ test('csvToJson: converts real-world annual-enterprise-survey-2025-financial-yea
   assert.equal(lastRow.year, '2025');
   assert.equal(lastRow.industry_code_ANZSIC, 'all');
   assert.equal(lastRow.value, '976077');
+});
+
+test('jsonToCsv: converts real-world airports.json wrapper object to CSV', () => {
+  const filePath = path.resolve('tests/fixtures/airports.json');
+  assert.ok(fs.existsSync(filePath), 'airports.json fixture must exist');
+  const text = fs.readFileSync(filePath, 'utf8');
+  const warnings = [];
+  const csv = jsonToCsv(text, ',', { warningsRef: warnings });
+  assert.equal(warnings.length, 1);
+  assert.ok(warnings[0].includes('airports'));
+  const rows = parseDelimited(csv, ',');
+  assert.equal(rows.length, 31);
+  assert.deepEqual(rows[0], ['code', 'name', 'city', 'country', 'lat', 'lon']);
+  assert.equal(rows[1][0], 'ATL');
+  assert.equal(rows[1][1], 'Hartsfield-Jackson Atlanta International');
+  assert.equal(rows[1][2], 'Atlanta');
+  assert.equal(rows[1][3], 'US');
+  assert.equal(rows[1][4], '33.6407');
+  assert.equal(rows[1][5], '-84.4277');
+});
+
+test('inspectJsonStructure: analyzes JSON structures and detects record arrays', () => {
+  const arr = inspectJsonStructure('[{"id":1}]');
+  assert.equal(arr.structureType, 'array-of-objects');
+
+  const single = inspectJsonStructure('{"name":"Delhi","temp":32}');
+  assert.equal(single.structureType, 'single-object');
+
+  const wrapperSingle = inspectJsonStructure('{"airports":[{"code":"ATL"}]}');
+  assert.equal(wrapperSingle.structureType, 'wrapper-single');
+  assert.deepEqual(wrapperSingle.candidateArrays, ['airports']);
+
+  const wrapperMulti = inspectJsonStructure('{"airports":[{"code":"ATL"}],"airlines":[{"code":"DL"}]}');
+  assert.equal(wrapperMulti.structureType, 'wrapper-multiple');
+  assert.deepEqual(wrapperMulti.candidateArrays, ['airports', 'airlines']);
 });
