@@ -439,17 +439,7 @@ function generateHomepageHtml(baseUrl = '') {
 
 function generateSitemapXml(baseUrl = '') {
   if (!baseUrl) {
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Sitemap generation notice:
-  PUBLIC_SITE_URL is not configured.
-  To emit fully qualified production sitemap URLs, set the PUBLIC_SITE_URL
-  environment variable during build (e.g. PUBLIC_SITE_URL=https://your-domain.com npm run build).
-  Local development URLs and fabricated production domains are intentionally omitted.
--->
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-</urlset>
-`;
+    return null;
   }
 
   const urls = [
@@ -486,9 +476,6 @@ function generateRobotsTxt(baseUrl = '') {
   if (!baseUrl) {
     return `User-agent: *
 Allow: /
-
-# Sitemap directive requires PUBLIC_SITE_URL build environment variable.
-# Example: PUBLIC_SITE_URL=https://your-domain.com npm run build
 `;
   }
 
@@ -526,10 +513,20 @@ export function buildPages(options = {}) {
   const sitemapContent = generateSitemapXml(baseUrl);
   const robotsContent = generateRobotsTxt(baseUrl);
 
-  fs.writeFileSync(path.resolve(publicDir, 'sitemap.xml'), sitemapContent, 'utf-8');
-  fs.writeFileSync(path.resolve(publicDir, 'robots.txt'), robotsContent, 'utf-8');
+  const publicSitemap = path.resolve(publicDir, 'sitemap.xml');
+  const rootSitemap = path.resolve(rootDir, 'sitemap.xml');
+  const distSitemap = path.resolve(rootDir, 'dist', 'sitemap.xml');
 
-  fs.writeFileSync(path.resolve(rootDir, 'sitemap.xml'), sitemapContent, 'utf-8');
+  if (sitemapContent) {
+    fs.writeFileSync(publicSitemap, sitemapContent, 'utf-8');
+    fs.writeFileSync(rootSitemap, sitemapContent, 'utf-8');
+  } else {
+    if (fs.existsSync(publicSitemap)) fs.unlinkSync(publicSitemap);
+    if (fs.existsSync(rootSitemap)) fs.unlinkSync(rootSitemap);
+    if (fs.existsSync(distSitemap)) fs.unlinkSync(distSitemap);
+  }
+
+  fs.writeFileSync(path.resolve(publicDir, 'robots.txt'), robotsContent, 'utf-8');
   fs.writeFileSync(path.resolve(rootDir, 'robots.txt'), robotsContent, 'utf-8');
 
   return {

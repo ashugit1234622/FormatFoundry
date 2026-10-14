@@ -63,15 +63,13 @@ describe('Static SEO Pages and Discovery Infrastructure', () => {
   it('handles sitemap and robots safely when PUBLIC_SITE_URL is not set', () => {
     buildPages({ siteUrl: '' });
 
-    const sitemapContent = fs.readFileSync(path.resolve(rootDir, 'sitemap.xml'), 'utf-8');
-    assert.ok(!sitemapContent.includes('localhost'), 'Sitemap must not contain localhost');
-    assert.ok(!sitemapContent.includes('<loc>http'), 'Sitemap must not contain fabricated URLs when unconfigured');
-    assert.ok(sitemapContent.includes('PUBLIC_SITE_URL is not configured'));
+    assert.equal(fs.existsSync(path.resolve(rootDir, 'sitemap.xml')), false);
+    assert.equal(fs.existsSync(path.resolve(rootDir, 'public', 'sitemap.xml')), false);
 
     const robotsContent = fs.readFileSync(path.resolve(rootDir, 'robots.txt'), 'utf-8');
     assert.ok(robotsContent.includes('User-agent: *'));
     assert.ok(robotsContent.includes('Allow: /'));
-    assert.ok(!robotsContent.includes('Sitemap: http'), 'Robots must not emit unconfigured sitemap URL');
+    assert.ok(!robotsContent.includes('Sitemap:'));
   });
 
   it('generates fully qualified canonicals, sitemap, and robots when PUBLIC_SITE_URL is set', () => {
