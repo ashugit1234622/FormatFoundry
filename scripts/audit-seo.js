@@ -126,6 +126,22 @@ export function runSeoAudit(options = {}) {
       issues.push(`${route.path} has multiple (${h1Matches.length}) <h1> headings`);
     }
 
+    if (html.includes('workers.dev')) {
+      issues.push(`${route.path} contains forbidden temporary workers.dev reference`);
+    }
+
+    if (!html.includes('rel="apple-touch-icon"') || !html.includes('/apple-touch-icon.png')) {
+      issues.push(`${route.path} is missing valid apple-touch-icon link tag`);
+    }
+
+    if (route.type === 'home') {
+      const expectedHomeDesc = 'Convert images, SVGs, JSON, CSV, TSV, and Markdown files online. Free browser-based conversion with private, local file processing.';
+      const descMatchExact = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+      if (descMatchExact && descMatchExact[1].trim() !== expectedHomeDesc) {
+        issues.push(`Homepage meta description must match concise copy: expected "${expectedHomeDesc}" but found "${descMatchExact[1]}"`);
+      }
+    }
+
     if (baseUrl) {
       const expectedCanonical = `${baseUrl}${route.path}`;
       const canonicalMatch = html.match(/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["']/i);
@@ -204,6 +220,15 @@ export function runSeoAudit(options = {}) {
         }
       }
     }
+
+    const anchorRegex = /<a\b[^>]*>([\s\S]*?)<\/a>/gi;
+    let anchorMatch;
+    while ((anchorMatch = anchorRegex.exec(html)) !== null) {
+      const textContent = anchorMatch[1].replace(/<[^>]+>/g, '').trim();
+      if (textContent.length > 80) {
+        issues.push(`${route.path} contains excessively verbose anchor text (${textContent.length} chars): "${textContent.slice(0, 50)}..."`);
+      }
+    }
   }
 
   const sitemapPath = path.resolve(targetDir, 'sitemap.xml');
@@ -255,6 +280,25 @@ export function runSeoAudit(options = {}) {
     } else {
       checksPassed.push(`Open Graph social image verified (${Math.round(ogStats.size / 1024)} KB)`);
     }
+  }
+
+  const appleTouchIconPath = path.resolve(targetDir, 'apple-touch-icon.png');
+  if (!fs.existsSync(appleTouchIconPath)) {
+    issues.push(`apple-touch-icon.png is missing from release directory ${targetDir}`);
+  } else {
+    const iconStat = fs.statSync(appleTouchIconPath);
+    if (iconStat.size < 500) {
+      issues.push(`apple-touch-icon.png is too small (${iconStat.size} bytes)`);
+    } else {
+      checksPassed.push(`Apple touch icon verified (${Math.round(iconStat.size / 1024)} KB)`);
+    }
+  }
+
+  const redirectsPath = path.resolve(targetDir, '_redirects');
+  if (!fs.existsSync(redirectsPath)) {
+    issues.push(`_redirects file is missing from release directory ${targetDir}`);
+  } else {
+    checksPassed.push('Cloudflare _redirects configuration verified');
   }
 
   checksPassed.push(`Audited ${expectedRoutes.length} published routes for semantic HTML and meta tags`);

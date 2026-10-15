@@ -99,4 +99,59 @@ describe('Static SEO Pages and Discovery Infrastructure', () => {
 
     buildPages();
   });
+
+  it('verifies production canonical URLs, apple touch icon, and concise anchor text across all 18 published routes', () => {
+    buildPages();
+
+    const expectedRoutes = [
+      { path: '/', file: path.resolve(rootDir, 'index.html') },
+      { path: '/tools/', file: path.resolve(rootDir, 'tools', 'index.html') }
+    ];
+
+    for (const tool of TOOLS) {
+      expectedRoutes.push({
+        path: tool.path,
+        file: path.resolve(rootDir, tool.slug, 'index.html')
+      });
+    }
+
+    assert.equal(expectedRoutes.length, 18);
+
+    for (const route of expectedRoutes) {
+      assert.ok(fs.existsSync(route.file), `Missing file: ${route.file}`);
+      const content = fs.readFileSync(route.file, 'utf-8');
+
+      assert.ok(
+        content.includes(`<link rel="canonical" href="https://formatfoundry.site${route.path}" />`),
+        `${route.path} missing exact canonical URL https://formatfoundry.site${route.path}`
+      );
+
+      assert.ok(
+        !content.includes('workers.dev'),
+        `${route.path} contains forbidden workers.dev reference`
+      );
+
+      assert.ok(
+        content.includes('rel="apple-touch-icon"'),
+        `${route.path} missing rel="apple-touch-icon"`
+      );
+
+      const anchorRegex = /<a\b[^>]*>([\s\S]*?)<\/a>/gi;
+      let match;
+      while ((match = anchorRegex.exec(content)) !== null) {
+        const text = match[1].replace(/<[^>]+>/g, '').trim();
+        assert.ok(
+          text.length <= 80,
+          `${route.path} has excessively long anchor text (${text.length} chars): "${text}"`
+        );
+      }
+    }
+
+    const homeHtml = fs.readFileSync(path.resolve(rootDir, 'index.html'), 'utf-8');
+    assert.ok(
+      homeHtml.includes('content="Convert images, SVGs, JSON, CSV, TSV, and Markdown files online. Free browser-based conversion with private, local file processing."'),
+      'Homepage must contain exact concise meta description'
+    );
+  });
 });
+

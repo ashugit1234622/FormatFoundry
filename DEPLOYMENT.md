@@ -45,44 +45,52 @@ The build generates the static output in the `dist/` directory:
 
 ## 2. Production Domain & Canonical URL Strategy
 
-### How `PUBLIC_SITE_URL` Works
-FormatFoundry uses `PUBLIC_SITE_URL` as the single source of truth for production domain configuration across all metadata, canonical tags, sitemaps, robots.txt, and Open Graph tags.
+### Production Origin: `https://formatfoundry.site`
+FormatFoundry uses `PUBLIC_SITE_URL` as the single source of truth for production domain configuration across all metadata, canonical tags, sitemaps, robots.txt, Open Graph tags, and Twitter Cards.
 
 Configuration order of precedence:
-1. Shell environment variable: `PUBLIC_SITE_URL=https://formatfoundry.com npm run build`
-2. Root `.env` file: `PUBLIC_SITE_URL=https://formatfoundary.9021382809as.workers.dev`
+1. Shell environment variable: `PUBLIC_SITE_URL=https://formatfoundry.site npm run build`
+2. Root `.env` file: `PUBLIC_SITE_URL=https://formatfoundry.site`
 3. Fallback (unconfigured): Omits canonicals and sitemap to prevent invalid indexing during local development.
 
-- **Configured State (`PUBLIC_SITE_URL=https://your-domain.com`):**
-  - Generates `<link rel="canonical" href="https://your-domain.com/<path>/" />` across all 18 HTML files.
-  - Generates `<meta property="og:url" content="https://your-domain.com/<path>/" />` and Twitter card metadata.
-  - Generates `dist/sitemap.xml` with absolute URLs and reliable `<lastmod>` dates derived from source file modification timestamps.
-  - Configures `dist/robots.txt` referencing `Sitemap: https://your-domain.com/sitemap.xml`.
+- **Configured State (`PUBLIC_SITE_URL=https://formatfoundry.site`):**
+  - Generates `<link rel="canonical" href="https://formatfoundry.site/<path>/" />` across all 18 HTML files. Each page references its own canonical path.
+  - Generates `<meta property="og:url" content="https://formatfoundry.site/<path>/" />` and Twitter card metadata.
+  - Generates `dist/sitemap.xml` with absolute URLs on `https://formatfoundry.site` and reliable `<lastmod>` dates derived from source file modification timestamps.
+  - Configures `dist/robots.txt` referencing `Sitemap: https://formatfoundry.site/sitemap.xml`.
+  - Generates `dist/_redirects` for Cloudflare static assets redirection.
 - **Unconfigured State (`PUBLIC_SITE_URL` not set):**
   - Canonical and sitemap tags are omitted to prevent emitting localhost, example domains, or placeholder canonicals.
   - `dist/sitemap.xml` is unlinked and omitted from deployment.
   - `dist/robots.txt` permits crawling without referencing a non-existent sitemap.
 
-### Custom Domain Migration Strategy
-FormatFoundry currently operates on the Cloudflare Workers hostname `formatfoundary.9021382809as.workers.dev`. When migrating to an official custom domain (such as `formatfoundry.com` or `formatfoundry.dev`), follow this protocol to avoid duplicate-host indexing:
+### Hostname & HTTPS Redirection Strategy (Cloudflare Architecture)
+FormatFoundry is hosted on Cloudflare with the apex domain `https://formatfoundry.site` as the primary canonical origin. To ensure consistent search indexing and security, all traffic must be consolidated to the single HTTPS apex host:
 
-1. **Update Origin Configuration:**
-   - Update `.env`: `PUBLIC_SITE_URL=https://formatfoundry.com`
-   - Or set the `PUBLIC_SITE_URL` environment variable in your CI/CD platform (Cloudflare Pages, GitHub Actions, Vercel).
-2. **Execute Production Build:**
-   - Run `npm run build` followed by `npm run audit`.
-   - All canonical links, Open Graph URLs, and `dist/sitemap.xml` will immediately reflect the new domain without manual page editing.
-3. **Configure 301 Permanent Redirects on Old Hostname:**
-   - In Cloudflare Dashboard for the old hostname (`formatfoundary.9021382809as.workers.dev`):
-     - Navigate to **Rules** > **Redirect Rules**.
-     - Set up an HTTP 301 redirect rule:
-       - Match: `All incoming requests`
-       - Target: `https://formatfoundry.com/${1}` (preserve request path and query string).
-       - Status code: `301 Moved Permanently`.
-   - Alternatively, if using Cloudflare Pages / Workers with custom domains, attach the custom domain to the existing project so Cloudflare can handle primary domain routing and canonicalization.
-4. **Prevent Duplicate Host Indexing:**
-   - A 301 redirect transfers search engine equity and informs Googlebot that the site has permanently moved.
-   - If the old hostname cannot be redirected, add an HTTP header `X-Robots-Tag: noindex, nofollow` on the old worker host, or rely on the updated canonical URLs (`rel="canonical"` points to the new custom domain).
+1. **Enforce HTTPS (HTTP &rarr; HTTPS 301):**
+   - In Cloudflare Dashboard, select the `formatfoundry.site` zone.
+   - Navigate to **SSL/TLS** > **Edge Certificates**.
+   - Enable **Always Use HTTPS**. Cloudflare will permanently redirect all plain `http://` requests to `https://` at the edge before hitting origin assets.
+2. **Redirect WWW to Apex (`www.formatfoundry.site` &rarr; `formatfoundry.site` 301):**
+   - **Why `www` previously returned 522:** In Cloudflare DNS, `www` was proxied, but was neither attached as a Worker Custom Domain nor intercepted by an Edge Redirect Rule. Cloudflare attempted to connect to an unconfigured origin server, triggering error 522 (Connection timed out).
+   - **Fix via Cloudflare Redirect Rules (Recommended):**
+     1. In Cloudflare Dashboard for `formatfoundry.site`, go to **Rules** > **Redirect Rules** > **Create rule**.
+     2. Rule name: `Redirect WWW to Apex`.
+     3. Filter criteria: Custom filter expression.
+        - Field: `Hostname` (`http.host`)
+        - Operator: `equals`
+        - Value: `www.formatfoundry.site`
+     4. Target URL: Dynamic
+        - Expression: `concat("https://formatfoundry.site", http.request.uri.path)`
+        - Status code: `301 Moved Permanently`.
+        - Preserve query string: Checked.
+     5. Click **Deploy**. This edge rule executes immediately, resolving the 522 error and preventing duplicate-host indexing.
+   - **Alternative via Worker Custom Domains:**
+     - Navigate to **Workers & Pages** > `formatfoundry` > **Settings** > **Domains & Routes**.
+     - Under **Custom Domains**, click **Add Custom Domain** and enter `www.formatfoundry.site`.
+     - *Note:* Do not create conflicting Worker Routes if Custom Domains are already assigned.
+3. **Legacy Workers Subdomain (`formatfoundary.9021382809as.workers.dev`):**
+   - Handled via `dist/_redirects` and edge redirect rules, routing all legacy subpath requests to `https://formatfoundry.site/:splat` with HTTP 301.
 
 ---
 

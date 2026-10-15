@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://formatfoundary.9021382809as.workers.dev/sitemap.xml
+Sitemap: https://formatfoundry.site/sitemap.xml

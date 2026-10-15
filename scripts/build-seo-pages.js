@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { TOOLS, TOOL_CATEGORIES } from '../src/config/tools-config.js';
+import { generateAppleTouchIcon, generateFaviconPng } from './generate-icons.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -227,6 +228,8 @@ function generateToolPageHtml(tool, baseUrl = '') {
     ${canonicalTag}
     ${ogTwitterTags}
     ${jsonLdTag}
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232B4C6F' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='3'/><path d='M8 12h8M12 8v8'/></svg>" />
     <link rel="stylesheet" href="/src/styles/main.css" />
   </head>
@@ -389,16 +392,21 @@ function generateToolsDirectoryHtml(baseUrl = '') {
       const cardsHtml = catTools
         .map(
           (tool) => `
-            <a href="${tool.path}" class="tool-card">
+            <article class="tool-card">
               <div class="tool-card-top">
                 <div class="tool-card-header">
-                  <span class="tool-card-title">${escapeHtml(tool.name)}</span>
+                  <h3 class="tool-card-title">
+                    <a href="${tool.path}" class="tool-card-link">${escapeHtml(tool.name)}</a>
+                  </h3>
                   <span class="tool-badge">${escapeHtml(tool.badgeFrom)} &rarr; ${escapeHtml(tool.badgeTo)}</span>
                 </div>
                 <p class="tool-card-desc">${escapeHtml(tool.metaDescription)}</p>
               </div>
-              <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
-            </a>
+              <a href="${tool.path}" class="tool-card-action" aria-label="Open ${escapeHtml(tool.name)}">
+                <span>Open Tool</span>
+                <span aria-hidden="true">&rarr;</span>
+              </a>
+            </article>
           `
         )
         .join('');
@@ -430,6 +438,8 @@ function generateToolsDirectoryHtml(baseUrl = '') {
     ${canonicalTag}
     ${ogTwitterTags}
     ${jsonLdTag}
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232B4C6F' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='3'/><path d='M8 12h8M12 8v8'/></svg>" />
     <link rel="stylesheet" href="/src/styles/main.css" />
   </head>
@@ -488,9 +498,10 @@ function generateToolsDirectoryHtml(baseUrl = '') {
 
 function generateHomepageHtml(baseUrl = '') {
   const canonicalTag = renderCanonical('/', baseUrl);
+  const homeMetaDescription = 'Convert images, SVGs, JSON, CSV, TSV, and Markdown files online. Free browser-based conversion with private, local file processing.';
   const ogTwitterTags = renderOpenGraphAndTwitter({
     title: 'FormatFoundry — Client-Side File & Data Converter',
-    description: 'FormatFoundry converts images (PNG, JPEG, WebP), SVGs, structured data (JSON, CSV, TSV), and Markdown documents locally in your browser with zero file uploads, absolute privacy, and instant downloads.',
+    description: homeMetaDescription,
     path: '/',
     baseUrl
   });
@@ -501,7 +512,7 @@ function generateHomepageHtml(baseUrl = '') {
       '@type': 'WebSite',
       name: 'FormatFoundry',
       url: baseUrl ? `${baseUrl}/` : '/',
-      description: 'Universal client-side file and data converter processing images, SVGs, tabular data, and documents in browser memory.'
+      description: homeMetaDescription
     },
     {
       '@context': 'https://schema.org',
@@ -530,16 +541,21 @@ function generateHomepageHtml(baseUrl = '') {
       const tool = TOOLS.find((t) => t.slug === slug);
       if (!tool) return '';
       return `
-        <a href="${tool.path}" class="tool-card">
+        <article class="tool-card">
           <div class="tool-card-top">
             <div class="tool-card-header">
-              <span class="tool-card-title">${escapeHtml(tool.name)}</span>
+              <h3 class="tool-card-title">
+                <a href="${tool.path}" class="tool-card-link">${escapeHtml(tool.name)}</a>
+              </h3>
               <span class="tool-badge">${escapeHtml(tool.badgeFrom)} &rarr; ${escapeHtml(tool.badgeTo)}</span>
             </div>
             <p class="tool-card-desc">${escapeHtml(tool.metaDescription)}</p>
           </div>
-          <span class="tool-card-action">Open Tool <span aria-hidden="true">&rarr;</span></span>
-        </a>
+          <a href="${tool.path}" class="tool-card-action" aria-label="Open ${escapeHtml(tool.name)}">
+            <span>Open Tool</span>
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </article>
       `;
     })
     .join('');
@@ -552,11 +568,13 @@ function generateHomepageHtml(baseUrl = '') {
     <title>FormatFoundry — Client-Side File &amp; Data Converter</title>
     <meta
       name="description"
-      content="FormatFoundry converts images (PNG, JPEG, WebP), SVGs, structured data (JSON, CSV, TSV), and Markdown documents locally in your browser with zero file uploads, absolute privacy, and instant downloads."
+      content="${homeMetaDescription}"
     />
     ${canonicalTag}
     ${ogTwitterTags}
     ${jsonLdTag}
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232B4C6F' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='3'/><path d='M8 12h8M12 8v8'/></svg>" />
     <link rel="stylesheet" href="/src/styles/main.css" />
   </head>
@@ -724,10 +742,16 @@ export function buildPages(options = {}) {
     fs.writeFileSync(distRobots, robotsContent, 'utf-8');
   }
 
-  const ogSource = path.resolve(publicDir, 'og-image.png');
-  const ogDist = path.resolve(distDir, 'og-image.png');
-  if (fs.existsSync(ogSource) && fs.existsSync(distDir)) {
-    fs.copyFileSync(ogSource, ogDist);
+  generateAppleTouchIcon();
+  generateFaviconPng();
+
+  const staticAssets = ['og-image.png', 'apple-touch-icon.png', 'favicon-32x32.png', '_redirects'];
+  for (const asset of staticAssets) {
+    const srcPath = path.resolve(publicDir, asset);
+    const destPath = path.resolve(distDir, asset);
+    if (fs.existsSync(srcPath) && fs.existsSync(distDir)) {
+      fs.copyFileSync(srcPath, destPath);
+    }
   }
 
   return {
