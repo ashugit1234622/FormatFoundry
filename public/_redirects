@@ -1,5 +1,2 @@
-http://formatfoundry.site/* https://formatfoundry.site/:splat 301
-http://www.formatfoundry.site/* https://formatfoundry.site/:splat 301
-https://www.formatfoundry.site/* https://formatfoundry.site/:splat 301
-http://formatfoundary.9021382809as.workers.dev/* https://formatfoundry.site/:splat 301
-https://formatfoundary.9021382809as.workers.dev/* https://formatfoundry.site/:splat 301
+/tools /tools/ 301
+/index.html / 301

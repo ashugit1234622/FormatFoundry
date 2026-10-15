@@ -298,7 +298,24 @@ export function runSeoAudit(options = {}) {
   if (!fs.existsSync(redirectsPath)) {
     issues.push(`_redirects file is missing from release directory ${targetDir}`);
   } else {
-    checksPassed.push('Cloudflare _redirects configuration verified');
+    const redirectsContent = fs.readFileSync(redirectsPath, 'utf-8');
+    const lines = redirectsContent.split('\n').map((l) => l.trim()).filter(Boolean);
+    for (const line of lines) {
+      if (line.startsWith('#')) continue;
+      const parts = line.split(/\s+/);
+      if (parts.length < 2) {
+        issues.push(`_redirects contains invalid rule line: "${line}"`);
+        continue;
+      }
+      const [source, destination] = parts;
+      if (!source.startsWith('/')) {
+        issues.push(`Invalid _redirects rule: source must be a relative URL starting with "/": "${source}"`);
+      }
+      if (!destination.startsWith('/')) {
+        issues.push(`Invalid _redirects rule: destination must be a relative URL starting with "/": "${destination}"`);
+      }
+    }
+    checksPassed.push('Cloudflare _redirects configuration verified (relative URLs only)');
   }
 
   checksPassed.push(`Audited ${expectedRoutes.length} published routes for semantic HTML and meta tags`);

@@ -65,32 +65,25 @@ Configuration order of precedence:
   - `dist/robots.txt` permits crawling without referencing a non-existent sitemap.
 
 ### Hostname & HTTPS Redirection Strategy (Cloudflare Architecture)
-FormatFoundry is hosted on Cloudflare with the apex domain `https://formatfoundry.site` as the primary canonical origin. To ensure consistent search indexing and security, all traffic must be consolidated to the single HTTPS apex host:
+FormatFoundry is hosted on Cloudflare with the apex domain `https://formatfoundry.site` as the primary canonical origin. To ensure consistent search indexing and security, all traffic is consolidated to the single HTTPS apex host:
 
-1. **Enforce HTTPS (HTTP &rarr; HTTPS 301):**
-   - In Cloudflare Dashboard, select the `formatfoundry.site` zone.
-   - Navigate to **SSL/TLS** > **Edge Certificates**.
-   - Enable **Always Use HTTPS**. Cloudflare will permanently redirect all plain `http://` requests to `https://` at the edge before hitting origin assets.
-2. **Redirect WWW to Apex (`www.formatfoundry.site` &rarr; `formatfoundry.site` 301):**
-   - **Why `www` previously returned 522:** In Cloudflare DNS, `www` was proxied, but was neither attached as a Worker Custom Domain nor intercepted by an Edge Redirect Rule. Cloudflare attempted to connect to an unconfigured origin server, triggering error 522 (Connection timed out).
-   - **Fix via Cloudflare Redirect Rules (Recommended):**
-     1. In Cloudflare Dashboard for `formatfoundry.site`, go to **Rules** > **Redirect Rules** > **Create rule**.
-     2. Rule name: `Redirect WWW to Apex`.
-     3. Filter criteria: Custom filter expression.
-        - Field: `Hostname` (`http.host`)
-        - Operator: `equals`
-        - Value: `www.formatfoundry.site`
-     4. Target URL: Dynamic
-        - Expression: `concat("https://formatfoundry.site", http.request.uri.path)`
-        - Status code: `301 Moved Permanently`.
-        - Preserve query string: Checked.
-     5. Click **Deploy**. This edge rule executes immediately, resolving the 522 error and preventing duplicate-host indexing.
-   - **Alternative via Worker Custom Domains:**
-     - Navigate to **Workers & Pages** > `formatfoundry` > **Settings** > **Domains & Routes**.
-     - Under **Custom Domains**, click **Add Custom Domain** and enter `www.formatfoundry.site`.
-     - *Note:* Do not create conflicting Worker Routes if Custom Domains are already assigned.
-3. **Legacy Workers Subdomain (`formatfoundary.9021382809as.workers.dev`):**
-   - Handled via `dist/_redirects` and edge redirect rules, routing all legacy subpath requests to `https://formatfoundry.site/:splat` with HTTP 301.
+1. **Worker Programmatic Redirections (`src/worker.js`):**
+   - Configured as the Worker entrypoint in `wrangler.json` with `binding: "ASSETS"`.
+   - Intercepts incoming requests before serving static assets:
+     - Detects `url.protocol === 'http:'` and immediately issues a 301 redirect to `https://formatfoundry.site/...`.
+     - Detects `url.hostname === 'www.formatfoundry.site'` or `url.hostname === 'formatfoundary.9021382809as.workers.dev'` and issues a 301 redirect to `https://formatfoundry.site/...`.
+     - Passes valid HTTPS apex requests directly to `env.ASSETS.fetch(request)`.
+2. **Relative `_redirects` Syntax for Cloudflare Static Assets:**
+   - Cloudflare Workers Static Assets strictly requires that all rules in `_redirects` use **relative paths** for both source and destination. Absolute URLs in `_redirects` cause Cloudflare deployment to fail with `Invalid _redirects configuration: Only relative URLs are allowed`.
+   - Configured in `public/_redirects`:
+     ```text
+     /tools /tools/ 301
+     /index.html / 301
+     ```
+   - All hostname and cross-protocol canonicalization is delegated to `src/worker.js` and Cloudflare Edge Rules.
+3. **Cloudflare Dashboard Edge Configuration (Defense in Depth):**
+   - **Enforce HTTPS:** Under **SSL/TLS** > **Edge Certificates**, toggle **Always Use HTTPS** to **ON**.
+   - **Resolve `www` 522 Error:** Under **Workers & Pages** > `formatfoundry` > **Settings** > **Domains & Routes**, add `www.formatfoundry.site` as an additional **Custom Domain** (or configure an Edge Redirect Rule under **Rules** > **Redirect Rules** matching `http.host eq "www.formatfoundry.site"` to dynamic destination `concat("https://formatfoundry.site", http.request.uri.path)` with 301). Do not create conflicting Worker Routes if Custom Domains are assigned.
 
 ---
 

@@ -1,7 +1,9 @@
 {
   "name": "formatfoundry",
   "compatibility_date": "2024-09-23",
+  "main": "src/worker.js",
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "binding": "ASSETS"
   }
 }
