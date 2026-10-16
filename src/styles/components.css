@@ -826,6 +826,33 @@
   box-shadow: 0 0 0 3px var(--color-accent-subtle);
 }
 
+.tools-search-box {
+  position: relative;
+  max-width: 500px;
+}
+
+.tools-no-results {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-2);
+}
+
+.tools-no-results-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-bottom: var(--space-2);
+}
+
+.tools-no-results-hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
 .tools-category-section {
   display: flex;
   flex-direction: column;

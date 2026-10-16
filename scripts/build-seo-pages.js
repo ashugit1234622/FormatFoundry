@@ -341,11 +341,100 @@ function generateToolPageHtml(tool, baseUrl = '') {
 `;
 }
 
-function generateToolsDirectoryHtml(baseUrl = '') {
+function getToolSearchAttributes(tool) {
+  const formats = new Set();
+  const keywords = new Set();
+
+  if (tool.slug) {
+    keywords.add(tool.slug);
+    tool.slug.split('-').forEach((p) => keywords.add(p));
+  }
+  if (tool.name) {
+    tool.name.toLowerCase().split(/\s+/).forEach((w) => keywords.add(w));
+  }
+  if (tool.preferredSource) {
+    const src = tool.preferredSource.toLowerCase();
+    formats.add(src);
+    formats.add(`.${src}`);
+    if (src === 'jpg' || src === 'jpeg') {
+      formats.add('jpg');
+      formats.add('.jpg');
+      formats.add('jpeg');
+      formats.add('.jpeg');
+    }
+  }
+  if (tool.preferredTarget) {
+    const tgt = tool.preferredTarget.toLowerCase();
+    formats.add(tgt);
+    formats.add(`.${tgt}`);
+    if (tgt === 'jpg' || tgt === 'jpeg') {
+      formats.add('jpg');
+      formats.add('.jpg');
+      formats.add('jpeg');
+      formats.add('.jpeg');
+    }
+  }
+  if (tool.badgeFrom) {
+    const bf = tool.badgeFrom.toLowerCase();
+    if (bf !== 'image' && bf !== 'pretty/min' && bf !== 'info') {
+      formats.add(bf);
+      formats.add(`.${bf}`);
+    }
+  }
+  if (tool.badgeTo) {
+    const bt = tool.badgeTo.toLowerCase();
+    if (bt !== 'image' && bt !== 'pretty/min' && bt !== 'info') {
+      formats.add(bt);
+      formats.add(`.${bt}`);
+    }
+  }
+  if (tool.category) {
+    keywords.add(tool.category);
+  }
+  if (tool.slug === 'markdown-to-html') {
+    formats.add('md');
+    formats.add('.md');
+    formats.add('markdown');
+    formats.add('html');
+    formats.add('.html');
+    formats.add('htm');
+    formats.add('.htm');
+  } else if (tool.slug === 'json-formatter') {
+    formats.add('json');
+    formats.add('.json');
+    keywords.add('pretty');
+    keywords.add('minify');
+    keywords.add('validator');
+    keywords.add('formatter');
+  } else if (tool.slug === 'image-inspector') {
+    formats.add('png');
+    formats.add('.png');
+    formats.add('jpg');
+    formats.add('.jpg');
+    formats.add('jpeg');
+    formats.add('.jpeg');
+    formats.add('webp');
+    formats.add('.webp');
+    formats.add('svg');
+    formats.add('.svg');
+    keywords.add('inspector');
+    keywords.add('metadata');
+    keywords.add('exif');
+    keywords.add('dimensions');
+  }
+
+  return {
+    formats: Array.from(formats).join(' '),
+    keywords: Array.from(keywords).join(' ')
+  };
+}
+
+export function generateToolsDirectoryHtml(baseUrl = '') {
   const canonicalTag = renderCanonical('/tools/', baseUrl);
   const ogTwitterTags = renderOpenGraphAndTwitter({
     title: 'All File Conversion Tools — FormatFoundry',
-    description: 'Browse all 16 client-side file conversion tools for raster images, vector SVGs, JSON, CSV, TSV, and Markdown.',
+    description:
+      'Browse all 16 client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, JSON, CSV, TSV, and Markdown locally with zero server uploads.',
     path: '/tools/',
     baseUrl
   });
@@ -354,27 +443,20 @@ function generateToolsDirectoryHtml(baseUrl = '') {
     {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
-      name: 'All File Conversion Tools',
+      name: 'All File Conversion Tools — FormatFoundry',
       url: baseUrl ? `${baseUrl}/tools/` : '/tools/',
-      description: 'Directory of all 16 client-side conversion tools in FormatFoundry.'
+      description:
+        'Browse all 16 client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, JSON, CSV, TSV, and Markdown locally with zero server uploads.'
     },
     {
       '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Home',
-          item: baseUrl ? `${baseUrl}/` : '/'
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: 'All Tools',
-          item: baseUrl ? `${baseUrl}/tools/` : '/tools/'
-        }
-      ]
+      '@type': 'ItemList',
+      itemListElement: TOOLS.map((tool, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: tool.name,
+        url: baseUrl ? `${baseUrl}${tool.path}` : tool.path
+      }))
     }
   ];
 
@@ -390,9 +472,10 @@ function generateToolsDirectoryHtml(baseUrl = '') {
       if (catTools.length === 0) return '';
 
       const cardsHtml = catTools
-        .map(
-          (tool) => `
-            <article class="tool-card">
+        .map((tool) => {
+          const searchMeta = getToolSearchAttributes(tool);
+          return `
+            <article class="tool-card" data-tool="${tool.slug}" data-source="${tool.preferredSource || ''}" data-target="${tool.preferredTarget || ''}" data-category="${tool.category}" data-formats="${searchMeta.formats}" data-keywords="${searchMeta.keywords}">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -407,8 +490,8 @@ function generateToolsDirectoryHtml(baseUrl = '') {
                 <span aria-hidden="true">&rarr;</span>
               </a>
             </article>
-          `
-        )
+          `;
+        })
         .join('');
 
       return `
@@ -467,17 +550,28 @@ function generateToolsDirectoryHtml(baseUrl = '') {
       </section>
 
       <div class="tools-search-wrapper">
-        <input
-          type="search"
-          id="tools-search"
-          class="tools-search-input"
-          placeholder="Filter tools by format or keyword (e.g. png, svg, json, csv)..."
-          aria-label="Filter tools"
-        />
+        <label for="tools-search" class="sr-only">Search conversion tools</label>
+        <div class="tools-search-box">
+          <input
+            type="search"
+            id="tools-search"
+            class="tools-search-input"
+            placeholder="Search tools by extension or format (e.g. .png, jpg, svg, json, csv)..."
+            aria-label="Filter conversion tools"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div id="tools-search-status" class="tools-search-status sr-only" aria-live="polite"></div>
       </div>
 
       <div class="tools-directory">
         ${sectionsHtml}
+        <div id="tools-no-results" class="tools-no-results" style="display: none;">
+          <p class="tools-no-results-title">No tools found matching &ldquo;<span id="tools-search-query"></span>&rdquo;</p>
+          <p class="tools-no-results-hint">Try searching for formats or extensions like <strong>.png</strong>, <strong>.jpg</strong>, <strong>.webp</strong>, <strong>.svg</strong>, <strong>.json</strong>, <strong>.csv</strong>, <strong>.tsv</strong>, or <strong>.md</strong>.</p>
+          <button type="button" id="tools-clear-search" class="btn btn-secondary">Clear Search</button>
+        </div>
       </div>
 
       <section class="info-panel" id="privacy">

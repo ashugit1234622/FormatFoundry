@@ -5,6 +5,7 @@ import { convertFile } from './engines/dispatcher.js';
 import { setupDropzone } from './ui/dropzone.js';
 import { setupStagedList } from './ui/staged-list.js';
 import { getToolConfig } from './config/tools-config.js';
+import { setupToolsFilter } from './ui/tools-filter.js';
 
 function init() {
   registerAllStandardRoutes(defaultRegistry);
@@ -72,30 +73,7 @@ function init() {
 
   const searchInput = document.getElementById('tools-search');
   if (searchInput) {
-    const cards = document.querySelectorAll('.tool-card');
-    const sections = document.querySelectorAll('.tools-category-section');
-
-    searchInput.addEventListener('input', (event) => {
-      const query = (event.target.value || '').trim().toLowerCase();
-
-      cards.forEach((card) => {
-        const text = (card.textContent || '').toLowerCase();
-        if (!query || text.includes(query)) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-
-      sections.forEach((section) => {
-        const visibleCards = section.querySelectorAll('.tool-card:not([style*="display: none"])');
-        if (visibleCards.length === 0 && query) {
-          section.style.display = 'none';
-        } else {
-          section.style.display = '';
-        }
-      });
-    });
+    setupToolsFilter({ input: searchInput });
   }
 }
 

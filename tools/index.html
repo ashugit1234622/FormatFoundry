@@ -12,38 +12,122 @@
     
     <meta property="og:site_name" content="FormatFoundry" />
     <meta property="og:title" content="All File Conversion Tools — FormatFoundry" />
-    <meta property="og:description" content="Browse all 16 client-side file conversion tools for raster images, vector SVGs, JSON, CSV, TSV, and Markdown." />
+    <meta property="og:description" content="Browse all 16 client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, JSON, CSV, TSV, and Markdown locally with zero server uploads." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://formatfoundry.site/tools/" />
     <meta property="og:image" content="https://formatfoundry.site/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="All File Conversion Tools — FormatFoundry" />
-    <meta name="twitter:description" content="Browse all 16 client-side file conversion tools for raster images, vector SVGs, JSON, CSV, TSV, and Markdown." />
+    <meta name="twitter:description" content="Browse all 16 client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, JSON, CSV, TSV, and Markdown locally with zero server uploads." />
     <meta name="twitter:image" content="https://formatfoundry.site/og-image.png" />
     <script type="application/ld+json">
 [
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "All File Conversion Tools",
+    "name": "All File Conversion Tools — FormatFoundry",
     "url": "https://formatfoundry.site/tools/",
-    "description": "Directory of all 16 client-side conversion tools in FormatFoundry."
+    "description": "Browse all 16 client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, JSON, CSV, TSV, and Markdown locally with zero server uploads."
   },
   {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+    "@type": "ItemList",
     "itemListElement": [
       {
         "@type": "ListItem",
         "position": 1,
-        "name": "Home",
-        "item": "https://formatfoundry.site/"
+        "name": "PNG to JPG Converter",
+        "url": "https://formatfoundry.site/png-to-jpg/"
       },
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "All Tools",
-        "item": "https://formatfoundry.site/tools/"
+        "name": "PNG to WebP Converter",
+        "url": "https://formatfoundry.site/png-to-webp/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "JPG to PNG Converter",
+        "url": "https://formatfoundry.site/jpg-to-png/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "JPG to WebP Converter",
+        "url": "https://formatfoundry.site/jpg-to-webp/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 5,
+        "name": "WebP to PNG Converter",
+        "url": "https://formatfoundry.site/webp-to-png/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 6,
+        "name": "WebP to JPG Converter",
+        "url": "https://formatfoundry.site/webp-to-jpg/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 7,
+        "name": "SVG to PNG Converter",
+        "url": "https://formatfoundry.site/svg-to-png/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 8,
+        "name": "SVG to JPG Converter",
+        "url": "https://formatfoundry.site/svg-to-jpg/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 9,
+        "name": "SVG to WebP Converter",
+        "url": "https://formatfoundry.site/svg-to-webp/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 10,
+        "name": "JSON to CSV Converter",
+        "url": "https://formatfoundry.site/json-to-csv/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 11,
+        "name": "CSV to JSON Converter",
+        "url": "https://formatfoundry.site/csv-to-json/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 12,
+        "name": "CSV to TSV Converter",
+        "url": "https://formatfoundry.site/csv-to-tsv/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 13,
+        "name": "TSV to CSV Converter",
+        "url": "https://formatfoundry.site/tsv-to-csv/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 14,
+        "name": "Markdown to HTML Converter",
+        "url": "https://formatfoundry.site/markdown-to-html/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 15,
+        "name": "JSON Formatter & Validator",
+        "url": "https://formatfoundry.site/json-formatter/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 16,
+        "name": "Image Inspector & Metadata Tool",
+        "url": "https://formatfoundry.site/image-inspector/"
       }
     ]
   }
@@ -93,13 +177,19 @@
       </section>
 
       <div class="tools-search-wrapper">
-        <input
-          type="search"
-          id="tools-search"
-          class="tools-search-input"
-          placeholder="Filter tools by format or keyword (e.g. png, svg, json, csv)..."
-          aria-label="Filter tools"
-        />
+        <label for="tools-search" class="sr-only">Search conversion tools</label>
+        <div class="tools-search-box">
+          <input
+            type="search"
+            id="tools-search"
+            class="tools-search-input"
+            placeholder="Search tools by extension or format (e.g. .png, jpg, svg, json, csv)..."
+            aria-label="Filter conversion tools"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div id="tools-search-status" class="tools-search-status sr-only" aria-live="polite"></div>
       </div>
 
       <div class="tools-directory">
@@ -111,7 +201,7 @@
           </div>
           <div class="tools-grid">
             
-            <article class="tool-card">
+            <article class="tool-card" data-tool="png-to-jpg" data-source="png" data-target="jpeg" data-category="image" data-formats="png .png jpeg .jpeg jpg .jpg" data-keywords="png-to-jpg png to jpg converter image">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -127,7 +217,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="png-to-webp" data-source="png" data-target="webp" data-category="image" data-formats="png .png webp .webp" data-keywords="png-to-webp png to webp converter image">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -143,7 +233,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="jpg-to-png" data-source="jpeg" data-target="png" data-category="image" data-formats="jpeg .jpeg jpg .jpg png .png" data-keywords="jpg-to-png jpg to png converter image">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -159,7 +249,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="jpg-to-webp" data-source="jpeg" data-target="webp" data-category="image" data-formats="jpeg .jpeg jpg .jpg webp .webp" data-keywords="jpg-to-webp jpg to webp converter image">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -175,7 +265,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="webp-to-png" data-source="webp" data-target="png" data-category="image" data-formats="webp .webp png .png" data-keywords="webp-to-png webp to png converter image">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -191,7 +281,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="webp-to-jpg" data-source="webp" data-target="jpeg" data-category="image" data-formats="webp .webp jpeg .jpeg jpg .jpg" data-keywords="webp-to-jpg webp to jpg converter image">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -217,7 +307,7 @@
           </div>
           <div class="tools-grid">
             
-            <article class="tool-card">
+            <article class="tool-card" data-tool="svg-to-png" data-source="svg" data-target="png" data-category="svg" data-formats="svg .svg png .png" data-keywords="svg-to-png svg to png converter">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -233,7 +323,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="svg-to-jpg" data-source="svg" data-target="jpeg" data-category="svg" data-formats="svg .svg jpeg .jpeg jpg .jpg" data-keywords="svg-to-jpg svg to jpg converter">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -249,7 +339,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="svg-to-webp" data-source="svg" data-target="webp" data-category="svg" data-formats="svg .svg webp .webp" data-keywords="svg-to-webp svg to webp converter">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -275,7 +365,7 @@
           </div>
           <div class="tools-grid">
             
-            <article class="tool-card">
+            <article class="tool-card" data-tool="json-to-csv" data-source="json" data-target="csv" data-category="data" data-formats="json .json csv .csv" data-keywords="json-to-csv json to csv converter data">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -291,7 +381,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="csv-to-json" data-source="csv" data-target="json" data-category="data" data-formats="csv .csv json .json" data-keywords="csv-to-json csv to json converter data">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -307,7 +397,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="csv-to-tsv" data-source="csv" data-target="tsv" data-category="data" data-formats="csv .csv tsv .tsv" data-keywords="csv-to-tsv csv to tsv converter data">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -323,7 +413,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="tsv-to-csv" data-source="tsv" data-target="csv" data-category="data" data-formats="tsv .tsv csv .csv" data-keywords="tsv-to-csv tsv to csv converter data">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -349,7 +439,7 @@
           </div>
           <div class="tools-grid">
             
-            <article class="tool-card">
+            <article class="tool-card" data-tool="markdown-to-html" data-source="markdown" data-target="html" data-category="text" data-formats="markdown .markdown html .html md .md htm .htm" data-keywords="markdown-to-html markdown to html converter text">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -365,7 +455,7 @@
               </a>
             </article>
           
-            <article class="tool-card">
+            <article class="tool-card" data-tool="json-formatter" data-source="json" data-target="json-pretty" data-category="text" data-formats="json .json json-pretty .json-pretty" data-keywords="json-formatter json formatter & validator text pretty minify">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -391,7 +481,7 @@
           </div>
           <div class="tools-grid">
             
-            <article class="tool-card">
+            <article class="tool-card" data-tool="image-inspector" data-source="" data-target="" data-category="inspection" data-formats="png .png jpg .jpg jpeg .jpeg webp .webp svg .svg" data-keywords="image-inspector image inspector & metadata tool inspection exif dimensions">
               <div class="tool-card-top">
                 <div class="tool-card-header">
                   <h3 class="tool-card-title">
@@ -410,6 +500,11 @@
           </div>
         </section>
       
+        <div id="tools-no-results" class="tools-no-results" style="display: none;">
+          <p class="tools-no-results-title">No tools found matching &ldquo;<span id="tools-search-query"></span>&rdquo;</p>
+          <p class="tools-no-results-hint">Try searching for formats or extensions like <strong>.png</strong>, <strong>.jpg</strong>, <strong>.webp</strong>, <strong>.svg</strong>, <strong>.json</strong>, <strong>.csv</strong>, <strong>.tsv</strong>, or <strong>.md</strong>.</p>
+          <button type="button" id="tools-clear-search" class="btn btn-secondary">Clear Search</button>
+        </div>
       </div>
 
       <section class="info-panel" id="privacy">
