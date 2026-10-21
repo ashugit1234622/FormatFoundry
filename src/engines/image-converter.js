@@ -1,4 +1,4 @@
-import { formatToMime, generateOutputFilename } from '../core/filename-utils.js';
+import { formatToMime, generateOutputFilename, normalizeFormat } from '../core/filename-utils.js';
 import { formatBytes } from '../core/formatters.js';
 
 export async function convertImage(file, targetFormat, options = {}) {
@@ -6,7 +6,8 @@ export async function convertImage(file, targetFormat, options = {}) {
     throw new Error('No image file provided for conversion.');
   }
 
-  const targetMime = formatToMime(targetFormat);
+  const normalizedTarget = normalizeFormat(targetFormat);
+  const targetMime = formatToMime(normalizedTarget);
   if (!targetMime) {
     throw new Error(`Unsupported output format: "${targetFormat}".`);
   }
@@ -54,7 +55,7 @@ export async function convertImage(file, targetFormat, options = {}) {
     throw new Error('Failed to allocate 2D canvas context for conversion.');
   }
 
-  if (targetFormat === 'jpeg') {
+  if (normalizedTarget === 'jpeg') {
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, width, height);
   }
@@ -62,14 +63,18 @@ export async function convertImage(file, targetFormat, options = {}) {
   ctx.drawImage(bitmap, 0, 0);
   bitmap.close();
 
-  const quality = targetFormat === 'png' ? undefined : (options.quality ?? 0.92);
+  const quality = normalizedTarget === 'png'
+    ? undefined
+    : (typeof options.quality === 'number' ? Math.max(0.1, Math.min(1.0, options.quality)) : 0.92);
+
+  const displayFormat = normalizedTarget === 'jpeg' ? 'JPG' : normalizedTarget.toUpperCase();
 
   const blob = await new Promise((resolve, reject) => {
     try {
       canvas.toBlob(
         (resultBlob) => {
           if (!resultBlob) {
-            reject(new Error(`Browser failed to encode image to ${targetFormat.toUpperCase()}.`));
+            reject(new Error(`Browser failed to encode image to ${displayFormat}.`));
           } else {
             resolve(resultBlob);
           }
@@ -78,21 +83,23 @@ export async function convertImage(file, targetFormat, options = {}) {
         quality
       );
     } catch {
-      reject(new Error(`Unexpected failure during ${targetFormat.toUpperCase()} encoding.`));
+      reject(new Error(`Unexpected failure during ${displayFormat} encoding.`));
     }
   });
 
   canvas.width = 0;
   canvas.height = 0;
 
-  if (blob.type !== targetMime) {
+  if (blob.type && blob.type.toLowerCase() !== targetMime.toLowerCase()) {
     throw new Error(
-      `Browser did not encode to ${targetFormat.toUpperCase()} (produced ${blob.type || 'unknown type'}).`
+      `Browser did not encode to ${displayFormat} (produced ${blob.type || 'unknown type'}).`
     );
   }
 
-  const outputName = generateOutputFilename(file.name, targetFormat);
-  const url = URL.createObjectURL(blob);
+  const outputName = generateOutputFilename(file.name, normalizedTarget);
+  const url = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+    ? URL.createObjectURL(blob)
+    : '';
 
   return {
     blob,
@@ -101,6 +108,7 @@ export async function convertImage(file, targetFormat, options = {}) {
     size: blob.size,
     sizeFormatted: formatBytes(blob.size),
     mimeType: blob.type,
+    format: normalizedTarget,
     width,
     height
   };

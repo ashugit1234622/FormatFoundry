@@ -3,6 +3,18 @@ import { sanitizeHtml } from '../utils/sanitizer.js';
 import { generateOutputFilename } from '../core/filename-utils.js';
 import { formatBytes } from '../core/formatters.js';
 
+function escapeHtmlText(str) {
+  if (typeof str !== 'string') {
+    return '';
+  }
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export function markdownToHtml(markdownText, { title = 'Converted Document' } = {}) {
   if (typeof markdownText !== 'string') {
     throw new TypeError('Markdown input must be a string');
@@ -14,13 +26,14 @@ export function markdownToHtml(markdownText, { title = 'Converted Document' } = 
   });
 
   const sanitizedBody = sanitizeHtml(rawHtml);
+  const safeTitle = escapeHtmlText(title);
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
+  <title>${safeTitle}</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

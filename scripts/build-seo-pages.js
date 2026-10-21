@@ -64,7 +64,7 @@ function renderHeader(activePath = '') {
       <div class="site-header-inner">
         <a href="/" class="brand-group" aria-label="FormatFoundry Home">
           <span class="brand-wordmark">FormatFoundry</span>
-          <span class="brand-badge">Client-Side</span>
+          <span class="brand-badge"><span class="badge-pulse"></span>Client-Side</span>
         </a>
         <nav class="site-nav" aria-label="Primary Navigation">
           <a href="/tools/" class="nav-link ${isTools ? 'active' : ''}">Tools</a>
@@ -434,7 +434,7 @@ export function generateToolsDirectoryHtml(baseUrl = '') {
   const ogTwitterTags = renderOpenGraphAndTwitter({
     title: 'All File Conversion Tools — FormatFoundry',
     description:
-      'Browse all 16 client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, JSON, CSV, TSV, and Markdown locally with zero server uploads.',
+      `Browse all ${TOOLS.length} client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, documents, PDFs, JSON, CSV, and Markdown locally with zero server uploads.`,
     path: '/tools/',
     baseUrl
   });
@@ -446,7 +446,7 @@ export function generateToolsDirectoryHtml(baseUrl = '') {
       name: 'All File Conversion Tools — FormatFoundry',
       url: baseUrl ? `${baseUrl}/tools/` : '/tools/',
       description:
-        'Browse all 16 client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, JSON, CSV, TSV, and Markdown locally with zero server uploads.'
+        `Browse all ${TOOLS.length} client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, documents, PDFs, JSON, CSV, and Markdown locally with zero server uploads.`
     },
     {
       '@context': 'https://schema.org',
@@ -516,7 +516,7 @@ export function generateToolsDirectoryHtml(baseUrl = '') {
     <title>All File Conversion Tools — FormatFoundry</title>
     <meta
       name="description"
-      content="Browse all 16 client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, JSON, CSV, TSV, and Markdown locally with zero server uploads."
+      content="Browse all ${TOOLS.length} client-side file conversion tools in FormatFoundry. Convert raster images, SVGs, documents, PDFs, JSON, CSV, and Markdown locally with zero server uploads."
     />
     ${canonicalTag}
     ${ogTwitterTags}
@@ -695,7 +695,7 @@ function generateHomepageHtml(baseUrl = '') {
             <h2 class="tools-category-title">Popular Dedicated Tools</h2>
             <p class="tools-category-desc">Dedicated converter landing pages with preconfigured format options.</p>
           </div>
-          <a href="/tools/" class="btn-secondary" style="font-size: var(--font-size-xs);">View All 16 Tools &rarr;</a>
+          <a href="/tools/" class="btn-secondary" style="font-size: var(--font-size-xs);">View All ${TOOLS.length} Tools &rarr;</a>
         </div>
         <div class="tools-grid">
           ${popularCardsHtml}

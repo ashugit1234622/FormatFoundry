@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown to PDF Converter — Render Markdown as PDF In-Browser | FormatFoundry</title>
+    <meta name="description" content="Convert Markdown files into styled PDF documents in your browser. Supports headings, bold/italic, code blocks, lists, and multi-page pagination." />
+    <link rel="canonical" href="https://formatfoundry.site/markdown-to-pdf/" />
+    
+    <meta property="og:site_name" content="FormatFoundry" />
+    <meta property="og:title" content="Markdown to PDF Converter — Render Markdown as PDF In-Browser | FormatFoundry" />
+    <meta property="og:description" content="Convert Markdown files into styled PDF documents in your browser. Supports headings, bold/italic, code blocks, lists, and multi-page pagination." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://formatfoundry.site/markdown-to-pdf/" />
+    <meta property="og:image" content="https://formatfoundry.site/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Markdown to PDF Converter — Render Markdown as PDF In-Browser | FormatFoundry" />
+    <meta name="twitter:description" content="Convert Markdown files into styled PDF documents in your browser. Supports headings, bold/italic, code blocks, lists, and multi-page pagination." />
+    <meta name="twitter:image" content="https://formatfoundry.site/og-image.png" />
+    <script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Markdown to PDF Converter",
+    "url": "https://formatfoundry.site/markdown-to-pdf/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript and HTML5 Canvas support",
+    "description": "Convert Markdown files into styled PDF documents in your browser. Supports headings, bold/italic, code blocks, lists, and multi-page pagination.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://formatfoundry.site/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Tools",
+        "item": "https://formatfoundry.site/tools/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Markdown to PDF",
+        "item": "https://formatfoundry.site/markdown-to-pdf/"
+      }
+    ]
+  }
+]
+</script>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232B4C6F' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='3'/><path d='M8 12h8M12 8v8'/></svg>" />
+    <link rel="stylesheet" href="/src/styles/main.css" />
+  </head>
+  <body data-tool="markdown-to-pdf">
+    
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a href="/" class="brand-group" aria-label="FormatFoundry Home">
+          <span class="brand-wordmark">FormatFoundry</span>
+          <span class="brand-badge"><span class="badge-pulse"></span>Client-Side</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary Navigation">
+          <a href="/tools/" class="nav-link ">Tools</a>
+          <a href="/#workspace" class="nav-link ">Workspace</a>
+          <a href="/#privacy" class="nav-link">Privacy</a>
+          <a href="/#about" class="nav-link">About</a>
+        </nav>
+      </div>
+    </header>
+  
+
+    <main class="main-content">
+      <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <ol class="breadcrumb-list">
+          <li class="breadcrumb-item">
+            <a href="/" class="breadcrumb-link">Home</a>
+            <span class="breadcrumb-separator" aria-hidden="true">/</span>
+          </li>
+          <li class="breadcrumb-item">
+            <a href="/tools/" class="breadcrumb-link">Tools</a>
+            <span class="breadcrumb-separator" aria-hidden="true">/</span>
+          </li>
+          <li class="breadcrumb-item">
+            <span class="breadcrumb-current" aria-current="page">Markdown to PDF</span>
+          </li>
+        </ol>
+      </nav>
+
+      <section class="intro-section">
+        <h1 class="intro-title">Markdown to PDF Converter</h1>
+        <p class="intro-subtitle">Render Markdown documentation into styled PDF files directly in your browser with zero server uploads and full formatting.</p>
+      </section>
+
+      <section class="workspace-section" id="workspace" aria-labelledby="workspace-heading">
+        <h2 id="workspace-heading" class="sr-only">Markdown to PDF Converter Workspace</h2>
+        <div id="dropzone" class="dropzone" tabindex="0" role="region" aria-label="File upload dropzone"></div>
+        <div id="staged-container"></div>
+      </section>
+
+      <section class="tool-content-section" aria-labelledby="guide-heading">
+        <h2 id="guide-heading" class="sr-only">How to Use and Format Specifications</h2>
+
+        <article class="tool-section-card">
+          <h3 class="tool-section-title">How to convert Markdown to PDF locally</h3>
+          <ol class="how-to-steps">
+            
+        <li class="how-to-step">
+          <span class="step-number" aria-hidden="true"></span>
+          <span>Drop your .md Markdown file into the workspace.</span>
+        </li>
+      
+        <li class="how-to-step">
+          <span class="step-number" aria-hidden="true"></span>
+          <span>Choose PDF Document as the output format.</span>
+        </li>
+      
+        <li class="how-to-step">
+          <span class="step-number" aria-hidden="true"></span>
+          <span>Click Convert to generate a formatted PDF document instantly.</span>
+        </li>
+      
+          </ol>
+        </article>
+
+        <article class="tool-section-card">
+          <h3 class="tool-section-title">Format specifications &amp; engine handling</h3>
+          <div class="specs-grid">
+            <div class="spec-box">
+              <span class="spec-label">Supported Input</span>
+              <span class="spec-value">Markdown files (.md, .markdown)</span>
+            </div>
+            <div class="spec-box">
+              <span class="spec-label">Available Targets</span>
+              <span class="spec-value">PDF documents (.pdf)</span>
+            </div>
+            <div class="spec-box">
+              <span class="spec-label">Processing Engine</span>
+              <span class="spec-value">Client-Side JavaScript &amp; HTML5</span>
+            </div>
+            <div class="spec-box">
+              <span class="spec-label">Privacy Model</span>
+              <span class="spec-value">100% Local (0 Network Uploads)</span>
+            </div>
+          </div>
+          <ul class="tool-section-text" style="margin-top: 12px; padding-left: 20px;">
+            <li>Renders H1, H2, H3 headings with hierarchical sizing</li><li>Supports bullet lists, blockquotes, and code blocks</li><li>Automatic page wrapping with bottom page numbers</li><li>Zero server upload ensures documentation privacy</li>
+          </ul>
+        </article>
+
+        <article class="tool-section-card">
+          <h3 class="tool-section-title">Technical specifications &amp; limitations</h3>
+          <div class="limitations-box">
+            <strong>Important format notes:</strong> Complex raw HTML embedded within Markdown is stripped for clean PDF pagination.
+          </div>
+        </article>
+
+        <article class="tool-section-card">
+          <h3 class="tool-section-title">Client-side privacy guarantee</h3>
+          <p class="tool-section-text">
+            FormatFoundry executes this conversion entirely within your browser runtime using standard Web APIs. No document, image bytes, metadata, or telemetry are ever uploaded to remote servers or third-party analytical endpoints.
+          </p>
+        </article>
+
+        <article class="tool-section-card">
+          <h3 class="tool-section-title">Frequently asked questions</h3>
+          <div class="faq-list">
+            
+        <details class="faq-details">
+          <summary class="faq-summary">Does this support standard Markdown syntax?</summary>
+          <div class="faq-answer">
+            <p>Yes. Headings, bulleted lists, quotes, inline code, and paragraphs are formatted into styled PDF elements.</p>
+          </div>
+        </details>
+      
+        <details class="faq-details">
+          <summary class="faq-summary">Is my Markdown document kept private?</summary>
+          <div class="faq-answer">
+            <p>Yes. Processing occurs entirely in your browser sandbox without network requests.</p>
+          </div>
+        </details>
+      
+          </div>
+        </article>
+
+        <article class="tool-section-card">
+          <h3 class="tool-section-title">Related conversion utilities</h3>
+          <div class="related-tools-grid">
+            
+        <a href="/text-to-pdf/" class="related-tool-card">
+          <span>Text to PDF Converter</span>
+          <span aria-hidden="true">&rarr;</span>
+        </a>
+      
+        <a href="/markdown-to-html/" class="related-tool-card">
+          <span>Markdown to HTML Converter</span>
+          <span aria-hidden="true">&rarr;</span>
+        </a>
+      
+        <a href="/markdown-to-docx/" class="related-tool-card">
+          <span>Markdown to Word Converter</span>
+          <span aria-hidden="true">&rarr;</span>
+        </a>
+      
+            <a href="/tools/" class="related-tool-card" style="border-style: dashed;">
+              <span>Explore All Tools</span>
+              <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <span>FormatFoundry &middot; Local-first utility</span>
+        <div class="footer-links">
+          <a href="/" class="footer-link">Home</a>
+          <a href="/tools/" class="footer-link">All Tools</a>
+          <a href="/#privacy" class="footer-link">Privacy Guarantee</a>
+          <a href="/#about" class="footer-link">Output Guarantee</a>
+        </div>
+        <span>Version 0.5.0 (Dedicated Tool Pages)</span>
+      </div>
+    </footer>
+  
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

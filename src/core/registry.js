@@ -170,6 +170,13 @@ export function registerStandardDataRoutes(registry) {
   });
 
   registry.registerRoute({
+    from: 'json',
+    to: 'tsv',
+    category: 'data',
+    description: 'Convert JSON array of objects to TSV'
+  });
+
+  registry.registerRoute({
     from: 'csv',
     to: 'json',
     category: 'data',
@@ -205,9 +212,172 @@ export function registerStandardDataRoutes(registry) {
   });
 }
 
+export function registerStandardDocumentRoutes(registry) {
+  // PDF Extraction
+  registry.registerRoute({
+    from: 'pdf',
+    to: 'text',
+    category: 'document',
+    description: 'Extract text from PDF document pages'
+  });
+
+  registry.registerRoute({
+    from: 'pdf',
+    to: 'png',
+    category: 'document',
+    description: 'Render PDF pages to PNG images'
+  });
+
+  registry.registerRoute({
+    from: 'pdf',
+    to: 'jpeg',
+    category: 'document',
+    description: 'Render PDF pages to JPEG images'
+  });
+
+  // Images to PDF
+  registry.registerRoute({
+    from: 'png',
+    to: 'pdf',
+    category: 'document',
+    description: 'Compile PNG images into PDF document'
+  });
+
+  registry.registerRoute({
+    from: 'jpeg',
+    to: 'pdf',
+    category: 'document',
+    description: 'Compile JPEG images into PDF document'
+  });
+
+  registry.registerRoute({
+    from: 'webp',
+    to: 'pdf',
+    category: 'document',
+    description: 'Compile WebP images into PDF document'
+  });
+
+  // Text & Markdown to PDF
+  registry.registerRoute({
+    from: 'text',
+    to: 'pdf',
+    category: 'document',
+    description: 'Convert plain text to paginated PDF document'
+  });
+
+  registry.registerRoute({
+    from: 'markdown',
+    to: 'pdf',
+    category: 'document',
+    description: 'Compile Markdown to styled PDF document'
+  });
+
+  // Word (DOCX) conversions
+  registry.registerRoute({
+    from: 'docx',
+    to: 'html',
+    category: 'document',
+    description: 'Convert Word document to clean HTML5'
+  });
+
+  registry.registerRoute({
+    from: 'docx',
+    to: 'markdown',
+    category: 'document',
+    description: 'Convert Word document to Markdown'
+  });
+
+  registry.registerRoute({
+    from: 'docx',
+    to: 'text',
+    category: 'document',
+    description: 'Extract plain text from Word document'
+  });
+
+  registry.registerRoute({
+    from: 'docx',
+    to: 'pdf',
+    category: 'document',
+    description: 'Convert Word document to PDF'
+  });
+
+  registry.registerRoute({
+    from: 'markdown',
+    to: 'docx',
+    category: 'document',
+    description: 'Convert Markdown to Microsoft Word document'
+  });
+
+  registry.registerRoute({
+    from: 'text',
+    to: 'docx',
+    category: 'document',
+    description: 'Convert plain text to Microsoft Word document'
+  });
+
+  // PowerPoint (PPTX) conversions
+  registry.registerRoute({
+    from: 'png',
+    to: 'pptx',
+    category: 'presentation',
+    description: 'Convert PNG images into PowerPoint slides'
+  });
+
+  registry.registerRoute({
+    from: 'jpeg',
+    to: 'pptx',
+    category: 'presentation',
+    description: 'Convert JPEG images into PowerPoint slides'
+  });
+
+  registry.registerRoute({
+    from: 'webp',
+    to: 'pptx',
+    category: 'presentation',
+    description: 'Convert WebP images into PowerPoint slides'
+  });
+
+  registry.registerRoute({
+    from: 'text',
+    to: 'pptx',
+    category: 'presentation',
+    description: 'Convert text outline into PowerPoint slides'
+  });
+
+  registry.registerRoute({
+    from: 'markdown',
+    to: 'pptx',
+    category: 'presentation',
+    description: 'Convert Markdown sections into PowerPoint slides'
+  });
+
+  registry.registerRoute({
+    from: 'pptx',
+    to: 'pdf',
+    category: 'presentation',
+    description: 'Convert PowerPoint presentation to PDF slides'
+  });
+
+  registry.registerRoute({
+    from: 'pptx',
+    to: 'text',
+    category: 'presentation',
+    description: 'Extract all text from PowerPoint presentation'
+  });
+
+  // Web / Markup
+  registry.registerRoute({
+    from: 'html',
+    to: 'markdown',
+    category: 'text',
+    description: 'Convert HTML markup to clean Markdown'
+  });
+}
+
 export function registerAllStandardRoutes(registry) {
   registerStandardImageRoutes(registry);
   registerStandardDataRoutes(registry);
+  registerStandardDocumentRoutes(registry);
 }
 
 export const defaultRegistry = new ConversionRegistry();

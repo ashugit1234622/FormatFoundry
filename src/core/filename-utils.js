@@ -6,11 +6,23 @@ export function normalizeFormat(format) {
   if (clean === 'jpg') {
     return 'jpeg';
   }
-  if (clean === 'md') {
+  if (clean === 'md' || clean === 'mdown' || clean === 'mkd') {
     return 'markdown';
   }
   if (clean === 'htm') {
     return 'html';
+  }
+  if (clean === 'tab') {
+    return 'tsv';
+  }
+  if (clean === 'txt' || clean === 'text') {
+    return 'text';
+  }
+  if (clean === 'doc' || clean === 'docx') {
+    return 'docx';
+  }
+  if (clean === 'ppt' || clean === 'pptx') {
+    return 'pptx';
   }
   return clean;
 }
@@ -29,6 +41,21 @@ export function formatToExtension(format) {
   }
   if (normalized === 'webp') {
     return 'webp';
+  }
+  if (normalized === 'svg') {
+    return 'svg';
+  }
+  if (normalized === 'pdf') {
+    return 'pdf';
+  }
+  if (normalized === 'docx') {
+    return 'docx';
+  }
+  if (normalized === 'pptx') {
+    return 'pptx';
+  }
+  if (normalized === 'text') {
+    return 'txt';
   }
   if (normalized === 'json' || normalized === 'json-pretty' || normalized === 'json-minify') {
     return 'json';
@@ -58,6 +85,18 @@ export function formatToMime(format) {
   }
   if (normalized === 'webp') {
     return 'image/webp';
+  }
+  if (normalized === 'pdf') {
+    return 'application/pdf';
+  }
+  if (normalized === 'docx') {
+    return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  }
+  if (normalized === 'pptx') {
+    return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  }
+  if (normalized === 'text') {
+    return 'text/plain;charset=utf-8';
   }
   if (normalized === 'json' || normalized === 'json-pretty' || normalized === 'json-minify') {
     return 'application/json';

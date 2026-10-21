@@ -11,6 +11,7 @@ import {
   matchesToolCard,
   setupToolsFilter
 } from '../../src/ui/tools-filter.js';
+import { TOOLS } from '../../src/config/tools-config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -97,7 +98,7 @@ describe('Tools Filter & Extension Search Logic', () => {
     const document = dom.window.document;
 
     const cards = Array.from(document.querySelectorAll('.tool-card'));
-    assert.strictEqual(cards.length, 16);
+    assert.strictEqual(cards.length, TOOLS.length);
 
     const pngCards = cards.filter((c) => matchesToolCard(c, '.png'));
     const pngSlugs = pngCards.map((c) => c.getAttribute('data-tool'));
@@ -221,7 +222,7 @@ describe('Tools Filter & Extension Search Logic', () => {
     clearBtn.click();
     assert.strictEqual(searchInput.value, '');
     const restoredCards = document.querySelectorAll('.tool-card:not([style*="display: none"])');
-    assert.strictEqual(restoredCards.length, 16);
+    assert.strictEqual(restoredCards.length, TOOLS.length);
     assert.strictEqual(noResultsEl.style.display, 'none');
 
     searchInput.value = 'svg';
@@ -231,7 +232,7 @@ describe('Tools Filter & Extension Search Logic', () => {
     const escEvent = new dom.window.KeyboardEvent('keydown', { key: 'Escape' });
     searchInput.dispatchEvent(escEvent);
     assert.strictEqual(searchInput.value, '');
-    assert.strictEqual(document.querySelectorAll('.tool-card:not([style*="display: none"])').length, 16);
+    assert.strictEqual(document.querySelectorAll('.tool-card:not([style*="display: none"])').length, TOOLS.length);
 
     filterCtrl.destroy();
   });

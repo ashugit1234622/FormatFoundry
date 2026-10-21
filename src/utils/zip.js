@@ -10,14 +10,22 @@ export function resolveUniqueFilename(filename, existingNames) {
     return name;
   }
 
-  const count = existingNames.get(name) + 1;
-  existingNames.set(name, count);
-
+  let count = existingNames.get(name) + 1;
   const lastDot = name.lastIndexOf('.');
-  if (lastDot > 0) {
-    return `${name.slice(0, lastDot)} (${count})${name.slice(lastDot)}`;
+  let candidate = lastDot > 0
+    ? `${name.slice(0, lastDot)} (${count})${name.slice(lastDot)}`
+    : `${name} (${count})`;
+
+  while (existingNames.has(candidate)) {
+    count += 1;
+    candidate = lastDot > 0
+      ? `${name.slice(0, lastDot)} (${count})${name.slice(lastDot)}`
+      : `${name} (${count})`;
   }
-  return `${name} (${count})`;
+
+  existingNames.set(name, count);
+  existingNames.set(candidate, 1);
+  return candidate;
 }
 
 export async function createZipArchive(items) {

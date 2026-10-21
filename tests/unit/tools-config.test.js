@@ -4,9 +4,18 @@ import { TOOLS, TOOL_CATEGORIES, getToolConfig, getToolsByCategory } from '../..
 import { ConversionRegistry, registerAllStandardRoutes } from '../../src/core/registry.js';
 
 describe('Tools Configuration and Route Metadata', () => {
-  it('defines exactly 16 supported tools across 5 categories', () => {
-    assert.equal(TOOLS.length, 16);
-    assert.deepEqual(Object.keys(TOOL_CATEGORIES), ['image', 'svg', 'data', 'text', 'inspection']);
+  it('defines 37 supported tools across 8 categories', () => {
+    assert.equal(TOOLS.length, 37);
+    assert.deepEqual(Object.keys(TOOL_CATEGORIES), [
+      'document',
+      'presentation',
+      'markup',
+      'image',
+      'svg',
+      'data',
+      'text',
+      'inspection'
+    ]);
   });
 
   it('contains valid paths and slugs for all tools', () => {
@@ -61,6 +70,12 @@ describe('Tools Configuration and Route Metadata', () => {
     assert.equal(textTools.length, 2);
     const inspectionTools = getToolsByCategory('inspection');
     assert.equal(inspectionTools.length, 1);
+    const documentTools = getToolsByCategory('document');
+    assert.equal(documentTools.length, 14);
+    const presentationTools = getToolsByCategory('presentation');
+    assert.equal(presentationTools.length, 6);
+    const markupTools = getToolsByCategory('markup');
+    assert.equal(markupTools.length, 1);
   });
 
   it('maps tool preferred targets to valid routes in conversion registry', () => {

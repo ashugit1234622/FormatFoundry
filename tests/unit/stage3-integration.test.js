@@ -13,14 +13,14 @@ test('Stage 3 Integration: registry holds all image, data, and text routes', () 
   const registry = new ConversionRegistry();
   registerAllStandardRoutes(registry);
 
-  assert.deepEqual(registry.getAvailableTargets('png'), ['jpeg', 'webp']);
-  assert.deepEqual(registry.getAvailableTargets('jpeg'), ['png', 'webp']);
-  assert.deepEqual(registry.getAvailableTargets('webp'), ['png', 'jpeg']);
+  assert.deepEqual(registry.getAvailableTargets('png'), ['jpeg', 'webp', 'pdf', 'pptx']);
+  assert.deepEqual(registry.getAvailableTargets('jpeg'), ['png', 'webp', 'pdf', 'pptx']);
+  assert.deepEqual(registry.getAvailableTargets('webp'), ['png', 'jpeg', 'pdf', 'pptx']);
 
-  assert.deepEqual(registry.getAvailableTargets('json'), ['json-pretty', 'json-minify', 'csv']);
+  assert.deepEqual(registry.getAvailableTargets('json'), ['json-pretty', 'json-minify', 'csv', 'tsv']);
   assert.deepEqual(registry.getAvailableTargets('csv'), ['json', 'tsv']);
   assert.deepEqual(registry.getAvailableTargets('tsv'), ['csv', 'json']);
-  assert.deepEqual(registry.getAvailableTargets('markdown'), ['html']);
+  assert.deepEqual(registry.getAvailableTargets('markdown'), ['html', 'pdf', 'docx', 'pptx']);
 });
 
 test('Stage 3 Integration: filename generation formats filenames properly', () => {
@@ -75,7 +75,7 @@ test('Stage 3 Integration: mixed file queue accepts valid images, data, and text
   const jsonItem = items.find((i) => i.name === 'data.json');
   assert.equal(jsonItem.status, 'ready');
   assert.equal(jsonItem.detectedFormat, 'json');
-  assert.deepEqual(jsonItem.availableTargets, ['json-pretty', 'json-minify', 'csv']);
+  assert.deepEqual(jsonItem.availableTargets, ['json-pretty', 'json-minify', 'csv', 'tsv']);
 
   const csvItem = items.find((i) => i.name === 'data.csv');
   assert.equal(csvItem.status, 'ready');
@@ -85,7 +85,7 @@ test('Stage 3 Integration: mixed file queue accepts valid images, data, and text
   const mdItem = items.find((i) => i.name === 'docs.md');
   assert.equal(mdItem.status, 'ready');
   assert.equal(mdItem.detectedFormat, 'markdown');
-  assert.deepEqual(mdItem.availableTargets, ['html']);
+  assert.deepEqual(mdItem.availableTargets, ['html', 'pdf', 'docx', 'pptx']);
 
   const brokenItem = items.find((i) => i.name === 'broken.png');
   assert.equal(brokenItem.status, 'invalid');

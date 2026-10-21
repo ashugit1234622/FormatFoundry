@@ -1,4 +1,19 @@
 export const TOOL_CATEGORIES = {
+  document: {
+    id: 'document',
+    label: 'Document & PDF Tools',
+    description: 'Convert PDFs, Word documents (DOCX), and text files locally with zero server uploads.'
+  },
+  presentation: {
+    id: 'presentation',
+    label: 'Presentation Tools',
+    description: 'Convert slide decks and presentations (PPTX) locally into text, images, and documents.'
+  },
+  markup: {
+    id: 'markup',
+    label: 'Markup & HTML Tools',
+    description: 'Convert HTML and Markdown bidirectional documentation and web markup.'
+  },
   image: {
     id: 'image',
     label: 'Image Converters',
@@ -655,6 +670,846 @@ export const TOOLS = [
       }
     ],
     relatedTools: ['png-to-jpg', 'svg-to-png', 'webp-to-png']
+  },
+  {
+    slug: 'pdf-to-text',
+    path: '/pdf-to-text/',
+    name: 'PDF to Text Converter',
+    shortName: 'PDF to Text',
+    category: 'document',
+    preferredSource: 'pdf',
+    preferredTarget: 'text',
+    title: 'PDF to Text Converter — Extract Text from PDF In-Browser | FormatFoundry',
+    metaDescription: 'Extract text content from PDF documents locally in your browser. Fast, private client-side PDF text extraction with zero server uploads.',
+    h1: 'PDF to Text Converter',
+    subtitle: 'Extract readable plain text from PDF documents instantly in your browser with zero server uploads or external telemetry.',
+    badgeFrom: 'PDF',
+    badgeTo: 'TXT',
+    howToSteps: [
+      'Select or drag and drop your PDF document into the staging area.',
+      'Confirm Plain Text (.txt) is selected as your conversion target.',
+      'Click Convert to extract all page text and download the resulting TXT file.'
+    ],
+    supportedInputs: 'PDF documents (.pdf)',
+    supportedOutputs: 'Plain text (.txt)',
+    features: [
+      'High-speed in-browser PDF parsing using PDF.js',
+      'Extracts text content page-by-page with structural spacing',
+      'Zero server upload ensures confidential documents remain completely private',
+      'Generates clean UTF-8 text files ready for search or editing'
+    ],
+    limitations: 'Scanned image-only PDFs containing raster scans rather than selectable text require optical character recognition (OCR), which is not performed by this purely structural extractor.',
+    faqs: [
+      {
+        question: 'Does this tool upload my PDF to any server?',
+        answer: 'No. All PDF parsing and text stream decoding execute 100% locally in your browser memory.'
+      },
+      {
+        question: 'Can I extract text from scanned PDFs?',
+        answer: 'This tool extracts digital text embedded in the PDF document. If the PDF consists solely of scanned image snapshots, OCR processing would be needed.'
+      }
+    ],
+    relatedTools: ['pdf-to-png', 'docx-to-text', 'text-to-pdf']
+  },
+  {
+    slug: 'pdf-to-png',
+    path: '/pdf-to-png/',
+    name: 'PDF to PNG Converter',
+    shortName: 'PDF to PNG',
+    category: 'document',
+    preferredSource: 'pdf',
+    preferredTarget: 'png',
+    title: 'PDF to PNG Converter — Render PDF Pages as PNG Images | FormatFoundry',
+    metaDescription: 'Convert PDF document pages into high-resolution PNG images in your browser. Client-side rendering with automatic ZIP archiving for multi-page documents.',
+    h1: 'PDF to PNG Converter',
+    subtitle: 'Render PDF pages to high-resolution PNG images directly in your browser with zero server uploads and bulk ZIP download.',
+    badgeFrom: 'PDF',
+    badgeTo: 'PNG',
+    howToSteps: [
+      'Select or drop your PDF document into the workspace.',
+      'Ensure PNG is selected as your conversion target.',
+      'Click Convert to render pages and download a single PNG or a multi-page ZIP archive.'
+    ],
+    supportedInputs: 'PDF documents (.pdf)',
+    supportedOutputs: 'PNG images (.png) or bundled ZIP archive (.zip)',
+    features: [
+      'High-resolution 2x supersampled page rasterization',
+      'Automatic multi-page bundling into organized ZIP archives',
+      'Completely local browser rendering using PDF.js and Canvas',
+      'Lossless PNG image export with crisp typography'
+    ],
+    limitations: 'Extremely large PDF files with hundreds of dense pages may take several seconds to rasterize in browser memory.',
+    faqs: [
+      {
+        question: 'How are multi-page PDFs handled?',
+        answer: 'For multi-page PDFs, each page is rendered to a distinct PNG image and all pages are packaged into a downloadable ZIP archive.'
+      },
+      {
+        question: 'Are PDF page renders crisp and high quality?',
+        answer: 'Yes. Pages are rendered at 2.0x device scale to ensure sharp fonts, vector diagrams, and illustrations.'
+      }
+    ],
+    relatedTools: ['pdf-to-jpg', 'pdf-to-text', 'png-to-pdf']
+  },
+  {
+    slug: 'pdf-to-jpg',
+    path: '/pdf-to-jpg/',
+    name: 'PDF to JPG Converter',
+    shortName: 'PDF to JPG',
+    category: 'document',
+    preferredSource: 'pdf',
+    preferredTarget: 'jpeg',
+    title: 'PDF to JPG Converter — Convert PDF Pages to JPG Images | FormatFoundry',
+    metaDescription: 'Convert PDF document pages to lightweight JPG images locally in your browser. Fast client-side rendering with automatic multi-page ZIP packaging.',
+    h1: 'PDF to JPG Converter',
+    subtitle: 'Convert PDF pages into compressed JPG images directly in your browser with zero server uploads and instant ZIP downloads.',
+    badgeFrom: 'PDF',
+    badgeTo: 'JPG',
+    howToSteps: [
+      'Drop your PDF document into the staging upload zone.',
+      'Select JPG as your conversion target format.',
+      'Click Convert to render pages into optimized JPG images.'
+    ],
+    supportedInputs: 'PDF documents (.pdf)',
+    supportedOutputs: 'JPG images (.jpg) or bundled ZIP archive (.zip)',
+    features: [
+      'High-fidelity 2x scale canvas page rendering',
+      'Solid white background matte applied to transparent page areas',
+      'Compact JPEG file sizes ideal for web sharing and email',
+      'Single page direct download or multi-page ZIP packaging'
+    ],
+    limitations: 'JPEG is a lossy compression format without alpha transparency, so all pages are composited on clean white backgrounds.',
+    faqs: [
+      {
+        question: 'Can I convert multi-page PDF documents to JPG?',
+        answer: 'Yes. Multi-page PDFs generate individually numbered JPG images bundled into a single ZIP file.'
+      },
+      {
+        question: 'Is my document private?',
+        answer: 'Completely private. The PDF never leaves your device and is processed entirely in browser memory.'
+      }
+    ],
+    relatedTools: ['pdf-to-png', 'jpg-to-pdf', 'pdf-to-text']
+  },
+  {
+    slug: 'png-to-pdf',
+    path: '/png-to-pdf/',
+    name: 'PNG to PDF Converter',
+    shortName: 'PNG to PDF',
+    category: 'document',
+    preferredSource: 'png',
+    preferredTarget: 'pdf',
+    title: 'PNG to PDF Converter — Turn PNG Images into PDF Documents | FormatFoundry',
+    metaDescription: 'Convert PNG images into clean, standard PDF documents directly in your browser. Fast, private, zero server uploads with aspect-ratio preserving layout.',
+    h1: 'PNG to PDF Converter',
+    subtitle: 'Convert PNG images into standard PDF documents in your browser with automatic dimension fitting and zero network uploads.',
+    badgeFrom: 'PNG',
+    badgeTo: 'PDF',
+    howToSteps: [
+      'Select or drag PNG images into the staging zone.',
+      'Verify PDF Document is chosen as the target format.',
+      'Click Convert to compile the image into a clean PDF document.'
+    ],
+    supportedInputs: 'PNG images (.png)',
+    supportedOutputs: 'PDF documents (.pdf)',
+    features: [
+      'Client-side PDF generation using pdf-lib',
+      'Preserves image resolution and natural aspect ratio',
+      'Standard A4 page dimensioning with proportional scaling',
+      'Completely private local processing without cloud uploads'
+    ],
+    limitations: 'Transparent pixels in PNG files are rendered over standard white PDF document pages.',
+    faqs: [
+      {
+        question: 'How is the image sized on the PDF page?',
+        answer: 'Images are placed onto standard A4 pages and scaled proportionally to fit within margins while preserving natural aspect ratios.'
+      },
+      {
+        question: 'Is my data secure?',
+        answer: 'Yes. All PDF compilation is performed client-side using JavaScript in your browser.'
+      }
+    ],
+    relatedTools: ['jpg-to-pdf', 'webp-to-pdf', 'pdf-to-png']
+  },
+  {
+    slug: 'jpg-to-pdf',
+    path: '/jpg-to-pdf/',
+    name: 'JPG to PDF Converter',
+    shortName: 'JPG to PDF',
+    category: 'document',
+    preferredSource: 'jpeg',
+    preferredTarget: 'pdf',
+    title: 'JPG to PDF Converter — Convert JPG Photos to PDF Documents | FormatFoundry',
+    metaDescription: 'Convert JPG photos and images into PDF documents in your browser. Fast, private client-side conversion with zero server uploads.',
+    h1: 'JPG to PDF Converter',
+    subtitle: 'Convert JPG images into professional PDF documents locally in your browser with zero server transmission.',
+    badgeFrom: 'JPG',
+    badgeTo: 'PDF',
+    howToSteps: [
+      'Select or drop your JPG files into the workspace.',
+      'Choose PDF Document as the conversion target.',
+      'Click Convert to produce a downloadable PDF file immediately.'
+    ],
+    supportedInputs: 'JPG/JPEG images (.jpg, .jpeg)',
+    supportedOutputs: 'PDF documents (.pdf)',
+    features: [
+      'Native client-side JPEG embedding without recompression quality loss',
+      'Automatic aspect ratio calculation and page centering',
+      'Zero server upload ensures personal documents remain private',
+      'Instant generation with low browser memory footprint'
+    ],
+    limitations: 'Input files must be valid JPEG images readable by the browser image decoder.',
+    faqs: [
+      {
+        question: 'Does converting JPG to PDF recompress or reduce photo quality?',
+        answer: 'No. The original JPEG binary stream is embedded directly into the PDF structure to prevent generational compression loss.'
+      },
+      {
+        question: 'Can I convert scanned receipts and forms to PDF?',
+        answer: 'Yes. JPG scans of documents, receipts, and photos convert cleanly into standard printable PDF files.'
+      }
+    ],
+    relatedTools: ['png-to-pdf', 'webp-to-pdf', 'pdf-to-jpg']
+  },
+  {
+    slug: 'webp-to-pdf',
+    path: '/webp-to-pdf/',
+    name: 'WebP to PDF Converter',
+    shortName: 'WebP to PDF',
+    category: 'document',
+    preferredSource: 'webp',
+    preferredTarget: 'pdf',
+    title: 'WebP to PDF Converter — Convert WebP Images to PDF Online | FormatFoundry',
+    metaDescription: 'Convert WebP graphics and screenshots to PDF documents locally in your browser. Pure client-side processing with zero server uploads.',
+    h1: 'WebP to PDF Converter',
+    subtitle: 'Convert modern WebP images into standard PDF documents directly in your browser with zero data leaving your device.',
+    badgeFrom: 'WEBP',
+    badgeTo: 'PDF',
+    howToSteps: [
+      'Drag and drop your WebP image files into the staging area.',
+      'Select PDF Document as your target format.',
+      'Click Convert to generate a standard PDF file instantly.'
+    ],
+    supportedInputs: 'WebP images (.webp)',
+    supportedOutputs: 'PDF documents (.pdf)',
+    features: [
+      'Lossless in-browser canvas decoding and PDF embedding',
+      'Fits graphics neatly onto standard A4 document pages',
+      'Private and confidential with zero server telemetry',
+      'Instant browser-based PDF generation'
+    ],
+    limitations: 'Animated WebP files will have their primary first frame rendered into the PDF document.',
+    faqs: [
+      {
+        question: 'Does this work on modern WebP images?',
+        answer: 'Yes. FormatFoundry uses browser canvas decoding to render all WebP image varieties before embedding into PDF.'
+      },
+      {
+        question: 'Are any files uploaded to a remote server?',
+        answer: 'None. Every operation takes place in your local browser sandbox.'
+      }
+    ],
+    relatedTools: ['png-to-pdf', 'jpg-to-pdf', 'webp-to-png']
+  },
+  {
+    slug: 'text-to-pdf',
+    path: '/text-to-pdf/',
+    name: 'Text to PDF Converter',
+    shortName: 'Text to PDF',
+    category: 'document',
+    preferredSource: 'text',
+    preferredTarget: 'pdf',
+    title: 'Text to PDF Converter — Create Paginated PDFs from Text | FormatFoundry',
+    metaDescription: 'Convert plain text files into clean, paginated PDF documents in your browser. Automatic line wrapping, page numbering, and zero server uploads.',
+    h1: 'Text to PDF Converter',
+    subtitle: 'Transform plain text files into paginated, professional PDF documents directly in your browser with complete privacy.',
+    badgeFrom: 'TXT',
+    badgeTo: 'PDF',
+    howToSteps: [
+      'Upload or drop your .txt plain text file into the staging area.',
+      'Select PDF Document as the target format.',
+      'Click Convert to generate and download a paginated PDF document.'
+    ],
+    supportedInputs: 'Plain text files (.txt)',
+    supportedOutputs: 'PDF documents (.pdf)',
+    features: [
+      'Automatic word wrapping and multi-page pagination',
+      'Standard margins with clean Helvetica typography',
+      'Page numbering on every document page',
+      'Completely offline client-side PDF construction'
+    ],
+    limitations: 'Plain text does not include rich font styling like bold or italics; for styled text, use Markdown to PDF.',
+    faqs: [
+      {
+        question: 'How are long text files handled?',
+        answer: 'Lines are automatically wrapped to fit margins, and new pages are created seamlessly with running page numbers.'
+      },
+      {
+        question: 'Are my notes or text files private?',
+        answer: 'Yes. The text is processed strictly in your local browser memory and never transmitted anywhere.'
+      }
+    ],
+    relatedTools: ['markdown-to-pdf', 'pdf-to-text', 'text-to-docx']
+  },
+  {
+    slug: 'markdown-to-pdf',
+    path: '/markdown-to-pdf/',
+    name: 'Markdown to PDF Converter',
+    shortName: 'Markdown to PDF',
+    category: 'document',
+    preferredSource: 'markdown',
+    preferredTarget: 'pdf',
+    title: 'Markdown to PDF Converter — Render Markdown as PDF In-Browser | FormatFoundry',
+    metaDescription: 'Convert Markdown files into styled PDF documents in your browser. Supports headings, bold/italic, code blocks, lists, and multi-page pagination.',
+    h1: 'Markdown to PDF Converter',
+    subtitle: 'Render Markdown documentation into styled PDF files directly in your browser with zero server uploads and full formatting.',
+    badgeFrom: 'MD',
+    badgeTo: 'PDF',
+    howToSteps: [
+      'Drop your .md Markdown file into the workspace.',
+      'Choose PDF Document as the output format.',
+      'Click Convert to generate a formatted PDF document instantly.'
+    ],
+    supportedInputs: 'Markdown files (.md, .markdown)',
+    supportedOutputs: 'PDF documents (.pdf)',
+    features: [
+      'Renders H1, H2, H3 headings with hierarchical sizing',
+      'Supports bullet lists, blockquotes, and code blocks',
+      'Automatic page wrapping with bottom page numbers',
+      'Zero server upload ensures documentation privacy'
+    ],
+    limitations: 'Complex raw HTML embedded within Markdown is stripped for clean PDF pagination.',
+    faqs: [
+      {
+        question: 'Does this support standard Markdown syntax?',
+        answer: 'Yes. Headings, bulleted lists, quotes, inline code, and paragraphs are formatted into styled PDF elements.'
+      },
+      {
+        question: 'Is my Markdown document kept private?',
+        answer: 'Yes. Processing occurs entirely in your browser sandbox without network requests.'
+      }
+    ],
+    relatedTools: ['text-to-pdf', 'markdown-to-html', 'markdown-to-docx']
+  },
+  {
+    slug: 'docx-to-html',
+    path: '/docx-to-html/',
+    name: 'Word to HTML Converter',
+    shortName: 'Word to HTML',
+    category: 'document',
+    preferredSource: 'docx',
+    preferredTarget: 'html',
+    title: 'Word to HTML Converter — Convert DOCX to Clean HTML5 | FormatFoundry',
+    metaDescription: 'Convert Microsoft Word (.docx) documents to clean, semantic HTML5 in your browser. Client-side extraction preserving headings, tables, and lists.',
+    h1: 'Word to HTML Converter',
+    subtitle: 'Convert Microsoft Word documents to clean semantic HTML5 directly in your browser with zero server uploads.',
+    badgeFrom: 'DOCX',
+    badgeTo: 'HTML',
+    howToSteps: [
+      'Select or drop your .docx Word file into the staging area.',
+      'Ensure HTML is selected as the conversion target.',
+      'Click Convert to generate clean semantic HTML markup ready for download.'
+    ],
+    supportedInputs: 'Microsoft Word documents (.docx)',
+    supportedOutputs: 'HTML5 documents (.html)',
+    features: [
+      'Clean HTML output free from Microsoft Office proprietary cruft',
+      'Preserves document structure including headings, tables, and lists',
+      '100% in-browser conversion powered by Mammoth.js',
+      'Instant download with complete confidentiality'
+    ],
+    limitations: 'Legacy binary .doc files (Word 97-2003) are not supported; convert them to modern .docx format before staging.',
+    faqs: [
+      {
+        question: 'Does this produce bloated Word HTML?',
+        answer: 'No. FormatFoundry uses Mammoth.js to produce clean, modern HTML5 markup without MSO styling bloat.'
+      },
+      {
+        question: 'Can I convert Word tables and lists?',
+        answer: 'Yes. Standard Word tables, bulleted lists, and numbered lists translate cleanly into semantic HTML tags.'
+      }
+    ],
+    relatedTools: ['docx-to-markdown', 'docx-to-text', 'docx-to-pdf']
+  },
+  {
+    slug: 'docx-to-markdown',
+    path: '/docx-to-markdown/',
+    name: 'Word to Markdown Converter',
+    shortName: 'Word to Markdown',
+    category: 'document',
+    preferredSource: 'docx',
+    preferredTarget: 'markdown',
+    title: 'Word to Markdown Converter — Convert DOCX to Markdown | FormatFoundry',
+    metaDescription: 'Convert Word DOCX documents into clean Markdown files locally in your browser. Preserves headings, bold/italics, links, and tables.',
+    h1: 'Word to Markdown Converter',
+    subtitle: 'Transform Word (.docx) files into clean Markdown documentation directly in your browser with zero server uploads.',
+    badgeFrom: 'DOCX',
+    badgeTo: 'MD',
+    howToSteps: [
+      'Drop your Microsoft Word (.docx) file into the converter workspace.',
+      'Select Markdown (.md) as the target format.',
+      'Click Convert to generate and download a clean Markdown file.'
+    ],
+    supportedInputs: 'Microsoft Word documents (.docx)',
+    supportedOutputs: 'Markdown documentation (.md)',
+    features: [
+      'Preserves headings, formatting, links, blockquotes, and tables',
+      'Clean GitHub Flavored Markdown (GFM) output',
+      '100% client-side conversion using Mammoth and Turndown',
+      'Zero server transmission protects confidential reports'
+    ],
+    limitations: 'Complex drawing canvas shapes and SmartArt diagrams are omitted in favor of text and structural content.',
+    faqs: [
+      {
+        question: 'How are headings converted?',
+        answer: 'Word heading styles (Heading 1, Heading 2, Heading 3) are mapped directly to standard Markdown hashes (#, ##, ###).'
+      },
+      {
+        question: 'Are Word tables supported in Markdown?',
+        answer: 'Yes. Word tables are converted into clean GitHub Flavored Markdown pipe tables.'
+      }
+    ],
+    relatedTools: ['docx-to-html', 'docx-to-text', 'markdown-to-docx']
+  },
+  {
+    slug: 'docx-to-text',
+    path: '/docx-to-text/',
+    name: 'Word to Text Converter',
+    shortName: 'Word to Text',
+    category: 'document',
+    preferredSource: 'docx',
+    preferredTarget: 'text',
+    title: 'Word to Text Converter — Extract Plain Text from DOCX | FormatFoundry',
+    metaDescription: 'Extract unformatted plain text from Microsoft Word (.docx) files locally in your browser. Fast, private text extraction with zero server uploads.',
+    h1: 'Word to Text Converter',
+    subtitle: 'Extract clean plain text from Microsoft Word documents directly in your browser with zero server telemetry.',
+    badgeFrom: 'DOCX',
+    badgeTo: 'TXT',
+    howToSteps: [
+      'Select or drop your .docx file into the staging area.',
+      'Confirm Plain Text (.txt) is selected as the output format.',
+      'Click Convert to extract all text paragraphs into a downloadable TXT file.'
+    ],
+    supportedInputs: 'Microsoft Word documents (.docx)',
+    supportedOutputs: 'Plain text (.txt)',
+    features: [
+      'Fast extraction of all paragraphs and textual sections',
+      'Strips formatting, layout bloat, and styling tags',
+      'Zero network requests ensures company confidential files stay private',
+      'Generates clean UTF-8 text ready for NLP, search, or storage'
+    ],
+    limitations: 'Extracts text content only; all fonts, colors, and layout decorations are discarded.',
+    faqs: [
+      {
+        question: 'Can I extract text from password-protected DOCX files?',
+        answer: 'Files must be unprotected so the browser can read and unzip the internal document XML.'
+      },
+      {
+        question: 'Is my Word document uploaded anywhere?',
+        answer: 'Never. Extraction runs entirely in your local browser sandbox.'
+      }
+    ],
+    relatedTools: ['docx-to-markdown', 'docx-to-pdf', 'pdf-to-text']
+  },
+  {
+    slug: 'docx-to-pdf',
+    path: '/docx-to-pdf/',
+    name: 'Word to PDF Converter',
+    shortName: 'Word to PDF',
+    category: 'document',
+    preferredSource: 'docx',
+    preferredTarget: 'pdf',
+    title: 'Word to PDF Converter — Convert DOCX to PDF In-Browser | FormatFoundry',
+    metaDescription: 'Convert Microsoft Word DOCX documents to PDF files locally in your browser. Fast, private client-side conversion with zero server uploads.',
+    h1: 'Word to PDF Converter',
+    subtitle: 'Convert Word (.docx) documents to standard PDF files directly in your browser with complete privacy and zero server uploads.',
+    badgeFrom: 'DOCX',
+    badgeTo: 'PDF',
+    howToSteps: [
+      'Drop your Microsoft Word .docx file into the upload dropzone.',
+      'Select PDF Document as your target format.',
+      'Click Convert to generate and download a standard PDF file.'
+    ],
+    supportedInputs: 'Microsoft Word documents (.docx)',
+    supportedOutputs: 'PDF documents (.pdf)',
+    features: [
+      'Client-side DOCX parsing and PDF page construction',
+      'Extracts structural headings and paragraphs into paginated PDF',
+      'Zero server upload preserves enterprise document confidentiality',
+      'Instant generation without subscription or queue waits'
+    ],
+    limitations: 'Complex desktop Word layout engines (multi-column text boxes, proprietary WordArt) are reflowed into clean paginated standard document pages.',
+    faqs: [
+      {
+        question: 'Does Word to PDF require Microsoft Office installed?',
+        answer: 'No. The conversion executes entirely in your browser using JavaScript.'
+      },
+      {
+        question: 'Are confidential documents safe?',
+        answer: 'Yes. The file is never sent over any network; all processing is local.'
+      }
+    ],
+    relatedTools: ['docx-to-html', 'docx-to-markdown', 'text-to-pdf']
+  },
+  {
+    slug: 'markdown-to-docx',
+    path: '/markdown-to-docx/',
+    name: 'Markdown to Word Converter',
+    shortName: 'Markdown to Word',
+    category: 'document',
+    preferredSource: 'markdown',
+    preferredTarget: 'docx',
+    title: 'Markdown to Word Converter — Convert Markdown to DOCX | FormatFoundry',
+    metaDescription: 'Convert Markdown files into formatted Microsoft Word (.docx) documents in your browser. Supports headings, bold/italics, bullet lists, and code.',
+    h1: 'Markdown to Word Converter',
+    subtitle: 'Transform Markdown files into Microsoft Word documents directly in your browser with zero server uploads.',
+    badgeFrom: 'MD',
+    badgeTo: 'DOCX',
+    howToSteps: [
+      'Drop your Markdown (.md) file into the converter workspace.',
+      'Choose Word Document (.docx) as the output format.',
+      'Click Convert to generate an editable Word document.'
+    ],
+    supportedInputs: 'Markdown files (.md, .markdown)',
+    supportedOutputs: 'Microsoft Word documents (.docx)',
+    features: [
+      'Maps Markdown headings into native Word Heading 1, 2, 3 styles',
+      'Preserves bold, italic, bullet lists, blockquotes, and code blocks',
+      'Generates valid modern Office Open XML (.docx) files',
+      'Zero server telemetry ensures your drafts remain private'
+    ],
+    limitations: 'Generates standard Calibri-styled Word documents that you can customize further inside Microsoft Word or Google Docs.',
+    faqs: [
+      {
+        question: 'Can I open the resulting file in Microsoft Word and Google Docs?',
+        answer: 'Yes. The output is a standard Office Open XML (.docx) document compatible with Word, Google Docs, and LibreOffice.'
+      },
+      {
+        question: 'Are bullet lists preserved?',
+        answer: 'Yes. Markdown bullets and numbered lists are converted into native Word list structures.'
+      }
+    ],
+    relatedTools: ['docx-to-markdown', 'text-to-docx', 'markdown-to-pdf']
+  },
+  {
+    slug: 'text-to-docx',
+    path: '/text-to-docx/',
+    name: 'Text to Word Converter',
+    shortName: 'Text to Word',
+    category: 'document',
+    preferredSource: 'text',
+    preferredTarget: 'docx',
+    title: 'Text to Word Converter — Convert TXT to Word DOCX | FormatFoundry',
+    metaDescription: 'Convert plain text files into editable Microsoft Word (.docx) documents locally in your browser. Fast, private client-side conversion.',
+    h1: 'Text to Word Converter',
+    subtitle: 'Convert plain text files into editable Microsoft Word documents directly in your browser with complete privacy.',
+    badgeFrom: 'TXT',
+    badgeTo: 'DOCX',
+    howToSteps: [
+      'Select or drop your .txt file into the upload zone.',
+      'Select Word Document (.docx) as your conversion target.',
+      'Click Convert to create and download an editable DOCX file.'
+    ],
+    supportedInputs: 'Plain text files (.txt)',
+    supportedOutputs: 'Microsoft Word documents (.docx)',
+    features: [
+      'Converts text paragraphs into clean Word document structure',
+      'Generates valid .docx files compatible with all Office suites',
+      'Zero server uploads ensure private notes remain secure',
+      'Instant generation in browser memory'
+    ],
+    limitations: 'Plain text inputs do not have font styling; text is formatted with clean standard typography.',
+    faqs: [
+      {
+        question: 'Can I edit the converted file in Word?',
+        answer: 'Yes. The generated .docx is fully editable in Microsoft Word, Pages, and Google Docs.'
+      },
+      {
+        question: 'Is my text transmitted over the internet?',
+        answer: 'No. The file is created locally on your device.'
+      }
+    ],
+    relatedTools: ['markdown-to-docx', 'docx-to-text', 'text-to-pdf']
+  },
+  {
+    slug: 'html-to-markdown',
+    path: '/html-to-markdown/',
+    name: 'HTML to Markdown Converter',
+    shortName: 'HTML to Markdown',
+    category: 'markup',
+    preferredSource: 'html',
+    preferredTarget: 'markdown',
+    title: 'HTML to Markdown Converter — Clean HTML to GFM Markdown | FormatFoundry',
+    metaDescription: 'Convert HTML markup into clean GitHub Flavored Markdown directly in your browser. Preserves headings, tables, links, images, and lists with zero uploads.',
+    h1: 'HTML to Markdown Converter',
+    subtitle: 'Convert HTML pages and snippets into clean GitHub Flavored Markdown directly in your browser with zero server uploads.',
+    badgeFrom: 'HTML',
+    badgeTo: 'MD',
+    howToSteps: [
+      'Drop your .html or .htm file into the staging workspace.',
+      'Select Markdown (.md) as the conversion target.',
+      'Click Convert to generate clean GFM Markdown instantly.'
+    ],
+    supportedInputs: 'HTML documents and snippets (.html, .htm)',
+    supportedOutputs: 'Markdown documentation (.md)',
+    features: [
+      'Converts headings, paragraphs, lists, links, images, and blockquotes',
+      'Full GitHub Flavored Markdown table support with alignment',
+      'Powered by Turndown with GFM extensions client-side',
+      '100% private in-browser conversion with zero telemetry'
+    ],
+    limitations: 'Complex JavaScript, inline scripts, and CSS style blocks are automatically stripped out during markup conversion.',
+    faqs: [
+      {
+        question: 'Does this handle HTML tables?',
+        answer: 'Yes. HTML tables are converted into clean GFM pipe tables.'
+      },
+      {
+        question: 'Can I convert full web page files?',
+        answer: 'Yes. Full HTML files or snippet fragments convert into clean Markdown documentation.'
+      }
+    ],
+    relatedTools: ['markdown-to-html', 'docx-to-markdown', 'markdown-to-docx']
+  },
+  {
+    slug: 'png-to-pptx',
+    path: '/png-to-pptx/',
+    name: 'PNG to PowerPoint Converter',
+    shortName: 'PNG to PowerPoint',
+    category: 'presentation',
+    preferredSource: 'png',
+    preferredTarget: 'pptx',
+    title: 'PNG to PowerPoint Converter — Create PPTX Slides from PNG | FormatFoundry',
+    metaDescription: 'Convert PNG images into 16:9 widescreen PowerPoint (.pptx) presentation slides locally in your browser with zero server uploads.',
+    h1: 'PNG to PowerPoint Converter',
+    subtitle: 'Convert PNG graphics and screenshots into PowerPoint presentation slides directly in your browser with zero server uploads.',
+    badgeFrom: 'PNG',
+    badgeTo: 'PPTX',
+    howToSteps: [
+      'Select or drop your PNG image into the staging area.',
+      'Select PowerPoint (.pptx) as the conversion target.',
+      'Click Convert to compile a 16:9 PowerPoint slide presentation.'
+    ],
+    supportedInputs: 'PNG images (.png)',
+    supportedOutputs: 'PowerPoint presentations (.pptx)',
+    features: [
+      'Generates modern 16:9 widescreen PowerPoint slide decks',
+      'Preserves image resolution with proportional aspect centering',
+      '100% in-browser generation using PptxGenJS',
+      'Completely private client-side processing'
+    ],
+    limitations: 'Transparent PNG backgrounds appear on standard slide canvas.',
+    faqs: [
+      {
+        question: 'What slide layout is used?',
+        answer: 'Slides use modern 16:9 widescreen format, centering your image to fit cleanly without distortion.'
+      },
+      {
+        question: 'Can I open this presentation in PowerPoint and Keynote?',
+        answer: 'Yes. The output is a standard OpenXML presentation compatible with PowerPoint, Google Slides, and Apple Keynote.'
+      }
+    ],
+    relatedTools: ['jpg-to-pptx', 'webp-to-pptx', 'pptx-to-text']
+  },
+  {
+    slug: 'jpg-to-pptx',
+    path: '/jpg-to-pptx/',
+    name: 'JPG to PowerPoint Converter',
+    shortName: 'JPG to PowerPoint',
+    category: 'presentation',
+    preferredSource: 'jpeg',
+    preferredTarget: 'pptx',
+    title: 'JPG to PowerPoint Converter — Turn JPG Photos into Slides | FormatFoundry',
+    metaDescription: 'Convert JPG photos and graphics into PowerPoint (.pptx) presentation slides in your browser. Fast, private client-side conversion with zero server uploads.',
+    h1: 'JPG to PowerPoint Converter',
+    subtitle: 'Turn JPG photos and charts into professional PowerPoint slides directly in your browser with complete privacy.',
+    badgeFrom: 'JPG',
+    badgeTo: 'PPTX',
+    howToSteps: [
+      'Drop your JPG photo or diagram into the upload area.',
+      'Confirm PowerPoint (.pptx) is selected as the target.',
+      'Click Convert to download a PowerPoint presentation instantly.'
+    ],
+    supportedInputs: 'JPG/JPEG images (.jpg, .jpeg)',
+    supportedOutputs: 'PowerPoint presentations (.pptx)',
+    features: [
+      'High-resolution image embedding onto widescreen slides',
+      'Automatic centering and aspect ratio preservation',
+      'Compatible with Microsoft PowerPoint, Google Slides, and Keynote',
+      'Zero server upload guarantees complete image confidentiality'
+    ],
+    limitations: 'Images exceeding slide dimensions are scaled down proportionally to ensure complete visibility within slide margins.',
+    faqs: [
+      {
+        question: 'Does this compress my original JPG photo?',
+        answer: 'No. The image is placed directly on the slide at original resolution.'
+      },
+      {
+        question: 'Is my photo uploaded to a server?',
+        answer: 'No. Slide compilation runs completely in your local browser memory.'
+      }
+    ],
+    relatedTools: ['png-to-pptx', 'webp-to-pptx', 'pptx-to-text']
+  },
+  {
+    slug: 'webp-to-pptx',
+    path: '/webp-to-pptx/',
+    name: 'WebP to PowerPoint Converter',
+    shortName: 'WebP to PowerPoint',
+    category: 'presentation',
+    preferredSource: 'webp',
+    preferredTarget: 'pptx',
+    title: 'WebP to PowerPoint Converter — Convert WebP to PPTX | FormatFoundry',
+    metaDescription: 'Convert WebP graphics and screenshots into PowerPoint presentation slides locally in your browser with zero server uploads.',
+    h1: 'WebP to PowerPoint Converter',
+    subtitle: 'Convert modern WebP images into PowerPoint slides directly in your browser with zero server transmission.',
+    badgeFrom: 'WEBP',
+    badgeTo: 'PPTX',
+    howToSteps: [
+      'Drag and drop your WebP image file into the workspace.',
+      'Select PowerPoint (.pptx) as your conversion target.',
+      'Click Convert to generate an editable presentation.'
+    ],
+    supportedInputs: 'WebP images (.webp)',
+    supportedOutputs: 'PowerPoint presentations (.pptx)',
+    features: [
+      'Pure client-side conversion from WebP to presentation slide',
+      'Standard 16:9 widescreen presentation format',
+      'Aspect ratio preserving auto-scaling',
+      'Completely local execution with zero network footprint'
+    ],
+    limitations: 'Animated WebP files are converted using their initial static frame.',
+    faqs: [
+      {
+        question: 'Can PowerPoint open WebP slides created here?',
+        answer: 'Yes. FormatFoundry transcodes WebP images into presentation-compatible slide elements supported across all PowerPoint versions.'
+      },
+      {
+        question: 'Are any files uploaded?',
+        answer: 'Zero files are uploaded; the process is 100% client-side.'
+      }
+    ],
+    relatedTools: ['png-to-pptx', 'jpg-to-pptx', 'pptx-to-text']
+  },
+  {
+    slug: 'text-to-pptx',
+    path: '/text-to-pptx/',
+    name: 'Text to PowerPoint Converter',
+    shortName: 'Text to PowerPoint',
+    category: 'presentation',
+    preferredSource: 'text',
+    preferredTarget: 'pptx',
+    title: 'Text to PowerPoint Converter — Generate Slides from Text Outline | FormatFoundry',
+    metaDescription: 'Convert plain text outlines into PowerPoint presentation slides in your browser. Automatic slide generation per paragraph with zero server uploads.',
+    h1: 'Text to PowerPoint Converter',
+    subtitle: 'Transform plain text outlines and notes into PowerPoint slides directly in your browser with complete privacy.',
+    badgeFrom: 'TXT',
+    badgeTo: 'PPTX',
+    howToSteps: [
+      'Drop your plain text file into the converter area.',
+      'Select PowerPoint (.pptx) as the output format.',
+      'Click Convert to generate a formatted PowerPoint slide deck.'
+    ],
+    supportedInputs: 'Plain text files (.txt)',
+    supportedOutputs: 'PowerPoint presentations (.pptx)',
+    features: [
+      'Creates title slide and organized content slides from text blocks',
+      'Modern 16:9 widescreen presentation layout',
+      'Standard clean typography with high contrast readability',
+      '100% private in-browser generation with zero network uploads'
+    ],
+    limitations: 'Paragraphs separated by blank lines become individual slide cards; keep text concise for best visual presentation.',
+    faqs: [
+      {
+        question: 'How does FormatFoundry divide text into slides?',
+        answer: 'Double newlines separate text sections into distinct slides, generating an introductory title slide followed by organized content cards.'
+      },
+      {
+        question: 'Is my presentation outline uploaded anywhere?',
+        answer: 'No. Everything is constructed inside your browser session.'
+      }
+    ],
+    relatedTools: ['markdown-to-pptx', 'pptx-to-text', 'text-to-docx']
+  },
+  {
+    slug: 'markdown-to-pptx',
+    path: '/markdown-to-pptx/',
+    name: 'Markdown to PowerPoint Converter',
+    shortName: 'Markdown to PowerPoint',
+    category: 'presentation',
+    preferredSource: 'markdown',
+    preferredTarget: 'pptx',
+    title: 'Markdown to PowerPoint Converter — Turn Markdown into PPTX Slides | FormatFoundry',
+    metaDescription: 'Convert Markdown files into structured PowerPoint (.pptx) slides in your browser. Splits on headings and bullet lists with zero server uploads.',
+    h1: 'Markdown to PowerPoint Converter',
+    subtitle: 'Convert Markdown documentation and briefs into PowerPoint slide decks directly in your browser with complete privacy.',
+    badgeFrom: 'MD',
+    badgeTo: 'PPTX',
+    howToSteps: [
+      'Drop your Markdown (.md) document into the staging dropzone.',
+      'Choose PowerPoint (.pptx) as the target format.',
+      'Click Convert to generate a presentation deck automatically.'
+    ],
+    supportedInputs: 'Markdown files (.md, .markdown)',
+    supportedOutputs: 'PowerPoint presentations (.pptx)',
+    features: [
+      'Splits on H1 and H2 headings into dedicated presentation slides',
+      'Translates Markdown bullet lists into native presentation bullets',
+      'Professional 16:9 widescreen slide styling',
+      'Zero server upload preserves proprietary presentation content'
+    ],
+    limitations: 'Embedded HTML tags in Markdown are stripped in favor of native PowerPoint text structures.',
+    faqs: [
+      {
+        question: 'How are Markdown headings converted to slides?',
+        answer: 'Each top-level heading (# or ##) starts a new presentation slide, with following text and bullets placed into the slide body.'
+      },
+      {
+        question: 'Are bullet points supported on slides?',
+        answer: 'Yes. Markdown list items (- or *) become structured bullet items on the generated slides.'
+      }
+    ],
+    relatedTools: ['text-to-pptx', 'markdown-to-docx', 'pptx-to-text']
+  },
+  {
+    slug: 'pptx-to-text',
+    path: '/pptx-to-text/',
+    name: 'PowerPoint to Text Extractor',
+    shortName: 'PowerPoint to Text',
+    category: 'presentation',
+    preferredSource: 'pptx',
+    preferredTarget: 'text',
+    title: 'PowerPoint to Text Extractor — Extract Text from PPTX In-Browser | FormatFoundry',
+    metaDescription: 'Extract text content and notes from PowerPoint (.pptx) presentations locally in your browser. Fast, private slide text extraction with zero server uploads.',
+    h1: 'PowerPoint to Text Extractor',
+    subtitle: 'Extract all text from PowerPoint presentation slides directly in your browser with zero server uploads or external telemetry.',
+    badgeFrom: 'PPTX',
+    badgeTo: 'TXT',
+    howToSteps: [
+      'Select or drop your PowerPoint .pptx file into the staging workspace.',
+      'Confirm Plain Text (.txt) is selected as the output format.',
+      'Click Convert to extract all slide text into a single downloadable text file.'
+    ],
+    supportedInputs: 'PowerPoint presentations (.pptx)',
+    supportedOutputs: 'Plain text (.txt)',
+    features: [
+      'Unzips and parses all slide XML files locally using fflate',
+      'Extracts text slide-by-slide with clear slide header demarcations',
+      'Zero server uploads protect sensitive pitch decks and briefings',
+      'Fast extraction even on presentations with dozens of slides'
+    ],
+    limitations: 'Extracts text elements and titles; speaker notes or embedded audio/video media are not included in the text dump.',
+    faqs: [
+      {
+        question: 'Does this tool work on presentations with many slides?',
+        answer: 'Yes. FormatFoundry rapidly unzips the presentation structure and scans each slide XML in sequence.'
+      },
+      {
+        question: 'Are my confidential pitch decks uploaded anywhere?',
+        answer: 'No. All decompression and XML parsing occur strictly inside your local browser memory.'
+      }
+    ],
+    relatedTools: ['pdf-to-text', 'docx-to-text', 'text-to-pptx']
   }
 ];
 

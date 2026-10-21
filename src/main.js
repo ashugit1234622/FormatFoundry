@@ -19,20 +19,27 @@ function init() {
     preferredSource: toolConfig?.preferredSource || null
   });
 
+  const MIN_CONVERSION_DELAY_MS = 4000;
+
   async function handleConvertItem(item) {
     if (!item || !item.selectedTarget || item.status === 'converting') {
       return;
     }
 
     fileQueue.setStatus(item.id, 'converting');
+    const delayPromise = new Promise((resolve) => setTimeout(resolve, MIN_CONVERSION_DELAY_MS));
 
     try {
-      const result = await convertFile(item.file, item.selectedTarget, {
-        sourceFormat: item.detectedFormat,
-        arrayProperty: item.selectedArrayProperty || null
-      });
+      const [result] = await Promise.all([
+        convertFile(item.file, item.selectedTarget, {
+          sourceFormat: item.detectedFormat,
+          arrayProperty: item.selectedArrayProperty || null
+        }),
+        delayPromise
+      ]);
       fileQueue.setResult(item.id, result);
     } catch (err) {
+      await delayPromise;
       const message = err instanceof Error ? err.message : 'Conversion failed unexpectedly.';
       fileQueue.setStatus(item.id, 'failed', message);
     }
@@ -40,13 +47,15 @@ function init() {
 
   async function handleConvertAll() {
     const readyItems = fileQueue.getItems().filter((i) => i.status === 'ready');
-    for (const item of readyItems) {
-      try {
-        await handleConvertItem(item);
-      } catch {
-        fileQueue.setStatus(item.id, 'failed', 'Conversion failed unexpectedly.');
-      }
-    }
+    await Promise.all(
+      readyItems.map(async (item) => {
+        try {
+          await handleConvertItem(item);
+        } catch {
+          fileQueue.setStatus(item.id, 'failed', 'Conversion failed unexpectedly.');
+        }
+      })
+    );
   }
 
   const dropzoneContainer = document.getElementById('dropzone');

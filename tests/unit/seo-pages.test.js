@@ -100,7 +100,7 @@ describe('Static SEO Pages and Discovery Infrastructure', () => {
     buildPages();
   });
 
-  it('verifies production canonical URLs, apple touch icon, and concise anchor text across all 18 published routes', () => {
+  it('verifies production canonical URLs, apple touch icon, and concise anchor text across all published routes', () => {
     buildPages();
 
     const expectedRoutes = [
@@ -115,7 +115,7 @@ describe('Static SEO Pages and Discovery Infrastructure', () => {
       });
     }
 
-    assert.equal(expectedRoutes.length, 18);
+    assert.equal(expectedRoutes.length, TOOLS.length + 2);
 
     for (const route of expectedRoutes) {
       assert.ok(fs.existsSync(route.file), `Missing file: ${route.file}`);

@@ -12,12 +12,12 @@ const rootDir = path.resolve(__dirname, '../..');
 describe('Production Route & Asset Audit', () => {
   it('passes comprehensive route audit on source templates', () => {
     const result = runRouteAudit({ targetDir: rootDir });
-    assert.equal(result.routesAudited, 18);
+    assert.equal(result.routesAudited, TOOLS.length + 2);
     assert.equal(result.issuesCount, 0, `Issues encountered: ${result.issues.join('; ')}`);
     assert.equal(result.passed, true);
   });
 
-  it('verifies all 16 tool routes correspond to valid tools configuration', () => {
+  it('verifies all tool routes correspond to valid tools configuration', () => {
     for (const tool of TOOLS) {
       assert.ok(tool.slug && tool.path);
       assert.equal(tool.path, `/${tool.slug}/`);
@@ -27,7 +27,7 @@ describe('Production Route & Asset Audit', () => {
   it('passes production route audit on dist directory if built', () => {
     const distDir = path.resolve(rootDir, 'dist');
     const result = runRouteAudit({ targetDir: distDir });
-    assert.equal(result.routesAudited, 18);
+    assert.equal(result.routesAudited, TOOLS.length + 2);
     assert.equal(result.issuesCount, 0, `Dist audit issues: ${result.issues.join('; ')}`);
     assert.equal(result.passed, true);
   });
@@ -36,7 +36,7 @@ describe('Production Route & Asset Audit', () => {
     const { runSeoAudit } = await import('../../scripts/audit-seo.js');
     const distDir = path.resolve(rootDir, 'dist');
     const result = runSeoAudit({ targetDir: distDir });
-    assert.equal(result.routesAudited, 18);
+    assert.equal(result.routesAudited, TOOLS.length + 2);
     assert.equal(result.issuesCount, 0, `SEO audit issues: ${result.issues.join('; ')}`);
     assert.equal(result.passed, true);
   });

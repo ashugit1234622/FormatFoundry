@@ -2,10 +2,10 @@ import { downloadBlob } from '../utils/download.js';
 import { createZipArchive } from '../utils/zip.js';
 
 function escapeHtml(str) {
-  if (typeof str !== 'string') {
+  if (str == null) {
     return '';
   }
-  return str
+  return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -23,7 +23,12 @@ const targetLabels = {
   'png': 'PNG',
   'jpeg': 'JPG',
   'webp': 'WEBP',
-  'svg': 'SVG'
+  'svg': 'SVG',
+  'pdf': 'PDF Document',
+  'docx': 'Word Document (.docx)',
+  'pptx': 'PowerPoint (.pptx)',
+  'text': 'Plain Text (.txt)',
+  'markdown': 'Markdown (.md)'
 };
 
 export function setupStagedList({ container, queue, onConvertItem, onConvertAll, defaultInspectionOpen = false }) {
@@ -43,7 +48,7 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
             <span class="staging-summary">0 files staged</span>
           </div>
           <div class="empty-state">
-            No files staged. Select or drag PNG, JPEG, WebP, SVG, JSON, CSV, TSV, or Markdown files above to begin.
+            No files staged. Select or drag images, PDFs, Word, PowerPoint, JSON, CSV, TSV, or Markdown files above to begin.
           </div>
         </div>
       `;
@@ -69,7 +74,9 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
         let badgeClass = 'item-ext-badge';
 
         if (item.detectedFormat) {
-          badgeText = item.detectedFormat === 'markdown' ? 'MD' : item.detectedFormat.toUpperCase();
+          if (item.detectedFormat === 'markdown') badgeText = 'MD';
+          else if (item.detectedFormat === 'text') badgeText = 'TXT';
+          else badgeText = item.detectedFormat.toUpperCase();
         } else if (item.extension) {
           badgeText = item.extension.toUpperCase();
         }
@@ -105,6 +112,10 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
 
         const structureHtml = item.jsonStructure?.description
           ? `<span class="structure-badge" title="${escapeHtml(item.jsonStructure.description)}">${escapeHtml(item.jsonStructure.description)}</span>`
+          : '';
+
+        const pageCountHtml = item.result?.pageCount && item.result.pageCount > 1
+          ? `<span class="structure-badge">${escapeHtml(item.result.pageCount)} pages (${item.result.format === 'zip' ? 'ZIP' : 'bundle'})</span>`
           : '';
 
         let warningsHtml = '';
@@ -174,6 +185,21 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
           `;
         }
 
+        let progressBarHtml = '';
+        if (item.status === 'converting') {
+          progressBarHtml = `
+            <div class="conversion-progress-wrapper" aria-live="polite">
+              <div class="conversion-progress-info">
+                <span class="conversion-progress-label">Converting in browser...</span>
+                <span class="conversion-progress-time">4s</span>
+              </div>
+              <div class="conversion-progress-track" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Converting file">
+                <div class="conversion-progress-bar"></div>
+              </div>
+            </div>
+          `;
+        }
+
         let actionButtonHtml = '';
         if (item.status === 'ready') {
           actionButtonHtml = `
@@ -183,15 +209,18 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
           `;
         } else if (item.status === 'converting') {
           actionButtonHtml = `
-            <button type="button" class="btn-primary" disabled>
+            <button type="button" class="btn-primary btn-converting" disabled>
+              <span class="btn-spinner" aria-hidden="true"></span>
               Converting...
             </button>
           `;
         } else if (item.status === 'completed' && item.result) {
           const safeOutputFilename = escapeHtml(item.result.filename);
+          const isZip = item.result.format === 'zip' || (item.result.filename && item.result.filename.toLowerCase().endsWith('.zip'));
+          const btnLabel = isZip ? 'Download ZIP' : 'Download';
           actionButtonHtml = `
             <a href="${item.result.url}" download="${safeOutputFilename}" class="btn-primary btn-download" data-action="download" data-id="${item.id}" aria-label="Download ${safeOutputFilename}">
-              Download
+              ${btnLabel}
             </a>
           `;
         } else if (item.status === 'failed') {
@@ -273,7 +302,9 @@ export function setupStagedList({ container, queue, onConvertItem, onConvertAll,
                   <span class="status-badge ${statusBadgeClass}">${statusText}</span>
                   ${mismatchHtml}
                   ${structureHtml}
+                  ${pageCountHtml}
                 </div>
+                ${progressBarHtml}
                 ${warningsHtml}
                 ${inspectionHtml}
               </div>

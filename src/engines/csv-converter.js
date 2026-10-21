@@ -1,4 +1,4 @@
-import { generateOutputFilename } from '../core/filename-utils.js';
+import { generateOutputFilename, normalizeFormat } from '../core/filename-utils.js';
 import { formatBytes } from '../core/formatters.js';
 
 export function parseDelimited(rawText, delimiter = ',') {
@@ -252,7 +252,11 @@ export function escapeDelimitedCell(value, delimiter = ',') {
 
   let str;
   if (typeof value === 'object') {
-    str = JSON.stringify(value);
+    try {
+      str = JSON.stringify(value);
+    } catch {
+      str = String(value);
+    }
   } else {
     str = String(value);
   }
@@ -539,7 +543,7 @@ export function tsvToCsv(tsvText) {
   return rows.map((row) => row.map((cell) => escapeDelimitedCell(cell, ',')).join(',')).join('\r\n');
 }
 
-export async function convertCsvOrTsv(file, targetFormat) {
+export async function convertCsvOrTsv(file, targetFormat, options = {}) {
   if (!file) {
     throw new Error('No file provided for delimited conversion');
   }
@@ -549,24 +553,38 @@ export async function convertCsvOrTsv(file, targetFormat) {
   let mimeType = 'text/plain';
   let warnings = [];
 
-  if (targetFormat === 'json') {
-    const isTsv = file.name?.toLowerCase().endsWith('.tsv');
+  const target = normalizeFormat(targetFormat);
+  const ext = file.name ? file.name.slice(file.name.lastIndexOf('.') + 1).toLowerCase() : '';
+  const source = normalizeFormat(options.sourceFormat) || normalizeFormat(ext) || 'csv';
+
+  if (target === 'json') {
+    const isTsv = source === 'tsv';
     const records = csvToJson(text, isTsv ? '\t' : ',');
     warnings = records.warnings || [];
     outputString = JSON.stringify(records, null, 2);
     mimeType = 'application/json;charset=utf-8';
-  } else if (targetFormat === 'tsv') {
-    outputString = csvToTsv(text);
+  } else if (target === 'tsv') {
+    if (source === 'tsv') {
+      const rows = parseDelimited(text, '\t');
+      outputString = rows.map((row) => row.map((cell) => escapeDelimitedCell(cell, '\t')).join('\t')).join('\r\n');
+    } else {
+      outputString = csvToTsv(text);
+    }
     mimeType = 'text/tab-separated-values;charset=utf-8';
-  } else if (targetFormat === 'csv') {
-    outputString = tsvToCsv(text);
+  } else if (target === 'csv') {
+    if (source === 'csv') {
+      const rows = parseDelimited(text, ',');
+      outputString = rows.map((row) => row.map((cell) => escapeDelimitedCell(cell, ',')).join(',')).join('\r\n');
+    } else {
+      outputString = tsvToCsv(text);
+    }
     mimeType = 'text/csv;charset=utf-8';
   } else {
     throw new Error(`Unsupported delimited conversion target: "${targetFormat}"`);
   }
 
   const blob = new Blob([outputString], { type: mimeType });
-  const filename = generateOutputFilename(file.name || `data.${targetFormat}`, targetFormat);
+  const filename = generateOutputFilename(file.name || `data.${target}`, target);
   const url = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
     ? URL.createObjectURL(blob)
     : '';
@@ -577,7 +595,7 @@ export async function convertCsvOrTsv(file, targetFormat) {
     filename,
     size: blob.size,
     sizeFormatted: formatBytes(blob.size),
-    format: targetFormat,
+    format: target,
     warnings
   };
 }
@@ -588,15 +606,16 @@ export async function convertJsonToDelimited(file, targetFormat = 'csv', options
   }
 
   const text = await file.text();
-  const delimiter = targetFormat === 'tsv' ? '\t' : ',';
+  const target = normalizeFormat(targetFormat) || 'csv';
+  const delimiter = target === 'tsv' ? '\t' : ',';
   const warnings = [];
   const outputString = jsonToCsv(text, delimiter, { ...options, warningsRef: warnings });
-  const mimeType = targetFormat === 'tsv'
+  const mimeType = target === 'tsv'
     ? 'text/tab-separated-values;charset=utf-8'
     : 'text/csv;charset=utf-8';
 
   const blob = new Blob([outputString], { type: mimeType });
-  const filename = generateOutputFilename(file.name || `data.${targetFormat}`, targetFormat);
+  const filename = generateOutputFilename(file.name || `data.${target}`, target);
   const url = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
     ? URL.createObjectURL(blob)
     : '';
@@ -607,7 +626,7 @@ export async function convertJsonToDelimited(file, targetFormat = 'csv', options
     filename,
     size: blob.size,
     sizeFormatted: formatBytes(blob.size),
-    format: targetFormat,
+    format: target,
     warnings
   };
 }

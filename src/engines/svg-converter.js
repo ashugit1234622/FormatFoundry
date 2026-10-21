@@ -1,5 +1,5 @@
 import { sanitizeHtml } from '../utils/sanitizer.js';
-import { generateOutputFilename, formatToMime } from '../core/filename-utils.js';
+import { generateOutputFilename, formatToMime, normalizeFormat } from '../core/filename-utils.js';
 import { formatBytes } from '../core/formatters.js';
 
 export function validateAndSanitizeSvg(svgText) {
@@ -8,7 +8,10 @@ export function validateAndSanitizeSvg(svgText) {
   }
 
   const trimmed = svgText.trim();
-  if (!trimmed.includes('<svg') || !trimmed.includes('</svg>')) {
+  const hasSvgOpening = /<svg\b/i.test(trimmed);
+  const hasSvgClosing = /<\/svg>|<svg\b[^>]*\/>/i.test(trimmed);
+
+  if (!hasSvgOpening || !hasSvgClosing) {
     throw new Error('File does not contain a valid SVG document root element');
   }
 
@@ -16,7 +19,7 @@ export function validateAndSanitizeSvg(svgText) {
     USE_PROFILES: { svg: true, svgFilters: true }
   });
 
-  if (!sanitized.includes('<svg')) {
+  if (!/<svg\b/i.test(sanitized)) {
     throw new Error('SVG document contained unsafe content or was completely filtered');
   }
 
@@ -24,9 +27,9 @@ export function validateAndSanitizeSvg(svgText) {
 }
 
 export function parseSvgDimensions(svgText) {
-  const widthMatch = svgText.match(/<svg[^>]*\bwidth=["']([0-9.]+)(px)?["']/i);
-  const heightMatch = svgText.match(/<svg[^>]*\bheight=["']([0-9.]+)(px)?["']/i);
-  const viewBoxMatch = svgText.match(/<svg[^>]*\bviewBox=["']([0-9.\s,-]+)["']/i);
+  const widthMatch = svgText.match(/<svg[^>]*\bwidth=["']\s*([0-9.]+)\s*(px)?\s*["']/i);
+  const heightMatch = svgText.match(/<svg[^>]*\bheight=["']\s*([0-9.]+)\s*(px)?\s*["']/i);
+  const viewBoxMatch = svgText.match(/<svg[^>]*\bviewBox=["']\s*([-+0-9.eE\s,]+)\s*["']/i);
 
   let width = widthMatch ? parseFloat(widthMatch[1]) : null;
   let height = heightMatch ? parseFloat(heightMatch[1]) : null;
@@ -84,7 +87,8 @@ export async function convertSvg(file, targetFormat, options = {}) {
   const sanitizedSvg = validateAndSanitizeSvg(rawText);
   const dimensions = parseSvgDimensions(sanitizedSvg);
 
-  const targetMime = formatToMime(targetFormat);
+  const normalizedTarget = normalizeFormat(targetFormat);
+  const targetMime = formatToMime(normalizedTarget);
   if (!targetMime) {
     throw new Error(`Unsupported output format: "${targetFormat}"`);
   }
@@ -93,8 +97,25 @@ export async function convertSvg(file, targetFormat, options = {}) {
     throw new Error('Browser graphics environment required for SVG rasterization');
   }
 
-  const svgBlob = new Blob([sanitizedSvg], { type: 'image/svg+xml;charset=utf-8' });
-  const svgUrl = URL.createObjectURL(svgBlob);
+  // Ensure rendered SVG has explicit width and height so browser Image element renders accurately
+  let svgToRender = sanitizedSvg;
+  if (!/<svg[^>]*\bwidth=["'][0-9.]+(px)?["']/i.test(svgToRender) || !/<svg[^>]*\bheight=["'][0-9.]+(px)?["']/i.test(svgToRender)) {
+    svgToRender = svgToRender.replace(/<svg\b([^>]*)>/i, (match, attrs) => {
+      let updated = attrs;
+      if (!/\bwidth=/i.test(updated)) {
+        updated += ` width="${dimensions.width}"`;
+      }
+      if (!/\bheight=/i.test(updated)) {
+        updated += ` height="${dimensions.height}"`;
+      }
+      return `<svg${updated}>`;
+    });
+  }
+
+  const svgBlob = new Blob([svgToRender], { type: 'image/svg+xml;charset=utf-8' });
+  const svgUrl = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+    ? URL.createObjectURL(svgBlob)
+    : '';
 
   let canvas;
   try {
@@ -116,23 +137,31 @@ export async function convertSvg(file, targetFormat, options = {}) {
       throw new Error('Failed to acquire 2D canvas context for SVG rasterization');
     }
 
-    if (targetFormat === 'jpeg') {
+    if (normalizedTarget === 'jpeg') {
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, dimensions.width, dimensions.height);
     }
 
     ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height);
   } finally {
-    URL.revokeObjectURL(svgUrl);
+    if (svgUrl && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+      try {
+        URL.revokeObjectURL(svgUrl);
+      } catch {}
+    }
   }
 
-  const quality = typeof options.quality === 'number' ? Math.max(0.1, Math.min(1.0, options.quality)) : 0.92;
+  const quality = normalizedTarget === 'png'
+    ? undefined
+    : (typeof options.quality === 'number' ? Math.max(0.1, Math.min(1.0, options.quality)) : 0.92);
+
+  const displayFormat = normalizedTarget === 'jpeg' ? 'JPG' : normalizedTarget.toUpperCase();
 
   const resultBlob = await new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error('Canvas rasterization failed to produce an output image'));
+          reject(new Error(`Canvas rasterization failed to produce an output ${displayFormat} image`));
           return;
         }
         resolve(blob);
@@ -145,12 +174,14 @@ export async function convertSvg(file, targetFormat, options = {}) {
   canvas.width = 0;
   canvas.height = 0;
 
-  if (resultBlob.type !== targetMime) {
+  if (resultBlob.type && resultBlob.type.toLowerCase() !== targetMime.toLowerCase()) {
     throw new Error(`MIME type mismatch: requested "${targetMime}" but browser produced "${resultBlob.type}"`);
   }
 
-  const filename = generateOutputFilename(file.name || 'vector.svg', targetFormat);
-  const url = URL.createObjectURL(resultBlob);
+  const filename = generateOutputFilename(file.name || 'vector.svg', normalizedTarget);
+  const url = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+    ? URL.createObjectURL(resultBlob)
+    : '';
 
   return {
     blob: resultBlob,
@@ -159,7 +190,9 @@ export async function convertSvg(file, targetFormat, options = {}) {
     size: resultBlob.size,
     sizeFormatted: formatBytes(resultBlob.size),
     mimeType: resultBlob.type,
-    format: targetFormat,
+    format: normalizedTarget,
+    width: dimensions.width,
+    height: dimensions.height,
     dimensions
   };
 }

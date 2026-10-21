@@ -158,7 +158,7 @@ export class FileQueue {
         item.valid = false;
         item.error = 'Invalid or corrupted image header';
         item.inspection = await inspectImageFile(item.file, null).catch(() => null);
-      } else if (normExt === 'json' || normExt === 'csv' || normExt === 'tsv' || normExt === 'markdown') {
+      } else if (normExt === 'json' || normExt === 'csv' || normExt === 'tsv' || normExt === 'markdown' || normExt === 'pdf' || normExt === 'docx' || normExt === 'pptx' || normExt === 'html' || normExt === 'text' || this.registry.getAvailableTargets(normExt).length > 0) {
         item.detectedFormat = normExt;
         const targets = this.registry.getAvailableTargets(normExt);
         item.availableTargets = targets;
@@ -171,7 +171,7 @@ export class FileQueue {
         } else {
           item.status = 'unsupported';
           item.valid = false;
-          item.error = 'No conversion targets available for this format';
+          item.error = 'Unsupported format';
         }
 
         if (normExt === 'json' && item.file && typeof item.file.text === 'function') {
