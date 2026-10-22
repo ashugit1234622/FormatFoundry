@@ -272,9 +272,9 @@ function extractSlideData(slideXml) {
 
 /**
  * High-fidelity browser-based PPTX to PDF renderer.
- * Leverages @aiden0z/pptx-renderer to parse and construct the exact visual slide DOM,
- * rasterizes each slide via html-to-image to high-resolution PNG, and constructs
- * a multi-page PDF where each page visually mirrors the original PowerPoint slide.
+ * Leverages @aiden0z/pptx-renderer with pre-processed OpenXML AlternateContent fallbacks,
+ * strict CSS stage isolation, high-resolution 2x rasterization, and accurate table/math styling
+ * to produce a PDF where each page visually mirrors its corresponding PowerPoint slide.
  */
 async function renderPptxSlidesToPdfBrowser(file, options = {}) {
   const { parseZip, buildPresentation, renderSlide } = await import('@aiden0z/pptx-renderer');
@@ -284,11 +284,73 @@ async function renderPptxSlidesToPdfBrowser(file, options = {}) {
   const buffer = await target.arrayBuffer();
 
   const files = await parseZip(buffer);
+
+  // Pre-process slide XMLs to substitute Fallback content for AlternateContent blocks
+  // (e.g. Office DrawingML Math equations and diagrams which PowerPoint saves with
+  // high-resolution pre-rendered fallback raster images in ppt/media/)
+  if (files && files.slides && typeof files.slides.forEach === 'function') {
+    files.slides.forEach((xml, slidePath) => {
+      if (typeof xml === 'string' && xml.includes('AlternateContent')) {
+        const updatedXml = xml.replace(/<mc:AlternateContent[\s\S]*?<\/mc:AlternateContent>/g, (match) => {
+          if ((match.includes('<m:oMath') || match.includes('a14:m') || match.includes('<m:oMathPara')) && match.includes('<mc:Fallback')) {
+            const blipMatch = match.match(/<a:blip\b[^>]*r:embed="([^"]+)"/);
+            const offMatch = match.match(/<a:off\b[^>]*x="(\d+)"\s+y="(\d+)"/);
+            const extMatch = match.match(/<a:ext\b[^>]*cx="(\d+)"\s+cy="(\d+)"/);
+            if (blipMatch && offMatch && extMatch) {
+              const rId = blipMatch[1];
+              const x = offMatch[1];
+              const y = offMatch[2];
+              const cx = extMatch[1];
+              const cy = extMatch[2];
+              return `<p:pic xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+                <p:nvPicPr><p:cNvPr id="999" name="FormulaFallback"/><p:cNvPicPr/><p:nvPr/></p:nvPicPr>
+                <p:blipFill><a:blip r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></p:blipFill>
+                <p:spPr><a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr>
+              </p:pic>`;
+            }
+          }
+          return match;
+        });
+        files.slides.set(slidePath, updatedXml);
+      }
+    });
+  }
+
   const pres = buildPresentation(files);
 
   if (!pres.slides || pres.slides.length === 0) {
     throw new Error('No slides found in PowerPoint presentation');
   }
+
+  // Inject scoped style sheet to isolate slide stage from site-wide styles
+  const styleEl = document.createElement('style');
+  styleEl.id = 'ff-pptx-stage-styles';
+  styleEl.textContent = `
+    #ff-pptx-render-stage {
+      position: fixed !important;
+      left: -99999px !important;
+      top: 0 !important;
+      overflow: hidden !important;
+      pointer-events: none !important;
+      opacity: 1 !important;
+      z-index: -99999 !important;
+      -webkit-font-smoothing: antialiased;
+    }
+    #ff-pptx-render-stage p {
+      margin: 0 !important;
+      padding: 0 !important;
+      line-height: normal !important;
+      color: inherit !important;
+    }
+    #ff-pptx-render-stage div,
+    #ff-pptx-render-stage p,
+    #ff-pptx-render-stage span {
+      overflow-wrap: normal !important;
+      word-break: normal !important;
+      line-break: normal !important;
+    }
+  `;
+  document.head.appendChild(styleEl);
 
   const container = document.createElement('div');
   container.id = 'ff-pptx-render-stage';
@@ -306,6 +368,7 @@ async function renderPptxSlidesToPdfBrowser(file, options = {}) {
   const pdfDoc = await PDFDocument.create();
   const slideWidth = pres.width || 960;
   const slideHeight = pres.height || 540;
+  const createdObjectUrls = [];
 
   try {
     for (let i = 0; i < pres.slides.length; i++) {
@@ -316,13 +379,99 @@ async function renderPptxSlidesToPdfBrowser(file, options = {}) {
       if (handle.ready) {
         await handle.ready;
       }
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      // Enforce proper word wrapping and line height on rendered text nodes
+      const textEls = handle.element.querySelectorAll('div, p, span');
+      for (const el of textEls) {
+        el.style.overflowWrap = 'normal';
+        el.style.wordBreak = 'normal';
+        el.style.lineBreak = 'normal';
+        if (el.tagName === 'P') {
+          el.style.margin = '0';
+          el.style.padding = '0';
+          el.style.lineHeight = 'normal';
+        }
+      }
+
+      // Fix table cell blip fills and default table borders
+      const tables = handle.element.querySelectorAll('table');
+      for (const tblEl of tables) {
+        const cells = tblEl.querySelectorAll('td, th');
+        let tableHasExplicitBorder = false;
+        for (const td of cells) {
+          if (td.style.border || td.style.borderTop || (td.getAttribute('style') || '').includes('border')) {
+            tableHasExplicitBorder = true;
+            break;
+          }
+        }
+        if (!tableHasExplicitBorder) {
+          for (const td of cells) {
+            td.style.border = '1px solid #222222';
+          }
+        }
+      }
+
+      if (slide.nodes) {
+        for (const node of slide.nodes) {
+          if (node.nodeType === 'table' && node.rows) {
+            const tblEl = handle.element.querySelector('table');
+            if (tblEl) {
+              const rows = tblEl.querySelectorAll('tr');
+
+              for (let rIdx = 0; rIdx < node.rows.length; rIdx++) {
+                const rowData = node.rows[rIdx];
+                const trEl = rows[rIdx];
+                if (!trEl) continue;
+                const tdEls = trEl.querySelectorAll('td, th');
+
+                for (let cIdx = 0; cIdx < rowData.cells.length; cIdx++) {
+                  const cellData = rowData.cells[cIdx];
+                  const tdEl = tdEls[cIdx];
+                  if (!tdEl) continue;
+
+                  // Handle cell blipFill
+                  if (cellData.properties && typeof cellData.properties.child === 'function') {
+                    const blipFill = cellData.properties.child('blipFill');
+                    if (blipFill && blipFill.exists()) {
+                      const blip = blipFill.child('blip');
+                      const rId = blip?.attr('embed') || blip?.attr('r:embed');
+                      if (rId && slide.rels && slide.rels.has(rId)) {
+                        const rel = slide.rels.get(rId);
+                        const mediaTarget = rel.target;
+                        const mediaKey = mediaTarget.replace(/^(\.\.\/)+media\//, '').replace(/^ppt\/media\//, '');
+                        if (pres.media) {
+                          for (const [mPath, mData] of pres.media.entries()) {
+                            if (mPath.endsWith(mediaKey)) {
+                              const mime = mediaKey.endsWith('.png') ? 'image/png' : 'image/jpeg';
+                              const blob = new Blob([mData], { type: mime });
+                              const url = URL.createObjectURL(blob);
+                              createdObjectUrls.push(url);
+                              tdEl.style.backgroundImage = `url("${url}")`;
+                              tdEl.style.backgroundRepeat = 'repeat';
+                              break;
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
       // Allow browser layout and DOM sub-resources to paint
-      await new Promise((resolve) => setTimeout(resolve, 60));
+      await new Promise((resolve) => setTimeout(resolve, 80));
 
       const pngDataUrl = await toPng(handle.element, {
         width: Math.ceil(slideWidth),
         height: Math.ceil(slideHeight),
-        pixelRatio: 1.5,
+        pixelRatio: 2.0,
         cacheBust: false
       });
 
@@ -344,6 +493,12 @@ async function renderPptxSlidesToPdfBrowser(file, options = {}) {
   } finally {
     if (container.parentNode) {
       document.body.removeChild(container);
+    }
+    if (styleEl.parentNode) {
+      document.head.removeChild(styleEl);
+    }
+    for (const u of createdObjectUrls) {
+      URL.revokeObjectURL(u);
     }
   }
 
