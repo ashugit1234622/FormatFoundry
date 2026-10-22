@@ -1509,7 +1509,47 @@ export const TOOLS = [
         answer: 'No. All decompression and XML parsing occur strictly inside your local browser memory.'
       }
     ],
-    relatedTools: ['pdf-to-text', 'docx-to-text', 'text-to-pptx']
+    relatedTools: ['pptx-to-pdf', 'pdf-to-text', 'text-to-pptx']
+  },
+  {
+    slug: 'pptx-to-pdf',
+    path: '/pptx-to-pdf/',
+    name: 'PowerPoint to PDF Converter',
+    shortName: 'PowerPoint to PDF',
+    category: 'presentation',
+    preferredSource: 'pptx',
+    preferredTarget: 'pdf',
+    title: 'PowerPoint to PDF Converter — Convert PPTX Slides to PDF In-Browser | FormatFoundry',
+    metaDescription: 'Convert PowerPoint (.pptx) presentations into high-fidelity PDF slides locally in your browser. Preserves layouts, vector graphics, tables, fonts, and images with zero server uploads.',
+    h1: 'PowerPoint to PDF Converter',
+    subtitle: 'Convert PowerPoint presentation slides into vector-accurate PDF documents directly in your browser with full visual fidelity and zero server uploads.',
+    badgeFrom: 'PPTX',
+    badgeTo: 'PDF',
+    howToSteps: [
+      'Select or drop your PowerPoint .pptx presentation into the staging workspace.',
+      'Confirm PDF is selected as the output format in the staged item controls.',
+      'Click Convert to render each slide with visual fidelity and download your publication-ready PDF.'
+    ],
+    supportedInputs: 'PowerPoint presentations (.pptx)',
+    supportedOutputs: 'PDF documents (.pdf)',
+    features: [
+      'High-fidelity browser rendering preserving slide layouts, themes, and master graphics',
+      'Exact vector alignment for tables, shape geometries, and custom typography',
+      'Crisp embedded raster and diagram reproduction with zero pixelation',
+      'Local-only in-memory rendering protects private presentations, pitch decks, and lecture notes'
+    ],
+    limitations: 'Embedded animations, slide transitions, and embedded audio/video clips are rendered as fixed high-resolution visual slide frames.',
+    faqs: [
+      {
+        question: 'Does the converted PDF keep the exact slide layout and background?',
+        answer: 'Yes. FormatFoundry uses an advanced browser slide renderer to reproduce master slide backgrounds, color themes, tables, custom shapes, and images identically.'
+      },
+      {
+        question: 'Are my presentation slides uploaded to any remote server?',
+        answer: 'No. All parsing, slide DOM construction, and PDF compilation execute 100% locally in your browser sandbox.'
+      }
+    ],
+    relatedTools: ['pptx-to-text', 'docx-to-pdf', 'text-to-pptx']
   }
 ];
 

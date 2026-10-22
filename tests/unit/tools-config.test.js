@@ -4,8 +4,8 @@ import { TOOLS, TOOL_CATEGORIES, getToolConfig, getToolsByCategory } from '../..
 import { ConversionRegistry, registerAllStandardRoutes } from '../../src/core/registry.js';
 
 describe('Tools Configuration and Route Metadata', () => {
-  it('defines 37 supported tools across 8 categories', () => {
-    assert.equal(TOOLS.length, 37);
+  it('defines 38 supported tools across 8 categories', () => {
+    assert.equal(TOOLS.length, 38);
     assert.deepEqual(Object.keys(TOOL_CATEGORIES), [
       'document',
       'presentation',
@@ -73,7 +73,7 @@ describe('Tools Configuration and Route Metadata', () => {
     const documentTools = getToolsByCategory('document');
     assert.equal(documentTools.length, 14);
     const presentationTools = getToolsByCategory('presentation');
-    assert.equal(presentationTools.length, 6);
+    assert.equal(presentationTools.length, 7);
     const markupTools = getToolsByCategory('markup');
     assert.equal(markupTools.length, 1);
   });
