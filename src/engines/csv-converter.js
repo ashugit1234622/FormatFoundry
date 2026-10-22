@@ -176,6 +176,9 @@ export function csvToJson(text, delimiter = ',') {
     const rawHeader = headerCells[c];
     const trimmedHeader = rawHeader.trim();
 
+    const isDangerousKey = (k) => k === '__proto__' || k === 'constructor' || k === 'prototype';
+    const effectiveBase = isDangerousKey(trimmedHeader) ? `${trimmedHeader}_col` : trimmedHeader;
+
     let finalName = '';
     if (trimmedHeader === '') {
       let candidate = `column_${c + 1}`;
@@ -188,17 +191,21 @@ export function csvToJson(text, delimiter = ',') {
       }
       finalName = candidate;
       warnings.push(`Column ${c + 1} has an empty header. Generated fallback name "${finalName}".`);
-    } else if (seenFinalHeaders.has(trimmedHeader)) {
+    } else if (seenFinalHeaders.has(effectiveBase) || isDangerousKey(trimmedHeader)) {
+      let candidate = isDangerousKey(trimmedHeader) ? effectiveBase : `${effectiveBase}_2`;
       let suffix = 2;
-      let candidate = `${trimmedHeader}_${suffix}`;
       while (seenFinalHeaders.has(candidate)) {
         suffix++;
-        candidate = `${trimmedHeader}_${suffix}`;
+        candidate = `${effectiveBase}_${suffix}`;
       }
       finalName = candidate;
-      warnings.push(`Duplicate header "${trimmedHeader}" at column ${c + 1} renamed to "${finalName}".`);
+      if (isDangerousKey(trimmedHeader)) {
+        warnings.push(`Reserved header "${trimmedHeader}" at column ${c + 1} renamed to "${finalName}" to prevent prototype pollution.`);
+      } else {
+        warnings.push(`Duplicate header "${trimmedHeader}" at column ${c + 1} renamed to "${finalName}".`);
+      }
     } else {
-      finalName = trimmedHeader;
+      finalName = effectiveBase;
     }
 
     seenFinalHeaders.add(finalName);

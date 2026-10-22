@@ -41,7 +41,7 @@ export async function createZipArchive(items) {
     throw new Error('No completed conversions available to archive');
   }
 
-  const zipData = {};
+  const zipData = Object.create(null);
   const seenNames = new Map();
 
   for (const entry of validEntries) {

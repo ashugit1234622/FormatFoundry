@@ -6,8 +6,9 @@ import { convertSvg } from './svg-converter.js';
 import { convertHtml } from './html-converter.js';
 import { imagesToPdf, textToPdf, markdownToPdf, pdfToText, pdfToImages } from './pdf-converter.js';
 import { docxToHtml, docxToMarkdown, docxToText, docxToPdf, textToDocx, markdownToDocx } from './docx-converter.js';
-import { imagesToPptx, textToPptx, pptxToText, pptxToPdf } from './pptx-converter.js';
+import { imagesToPptx, textToPptx, markdownToPptx, pptxToText, pptxToPdf } from './pptx-converter.js';
 import { normalizeFormat } from '../core/filename-utils.js';
+import { extractFileExtension } from '../core/file-validator.js';
 
 export async function convertFile(file, targetFormat, options = {}) {
   if (!file) {
@@ -20,7 +21,7 @@ export async function convertFile(file, targetFormat, options = {}) {
     return convertJson(file, target);
   }
 
-  const ext = file.name ? file.name.slice(file.name.lastIndexOf('.') + 1).toLowerCase() : '';
+  const ext = extractFileExtension(file.name);
   const source = normalizeFormat(options.sourceFormat) || normalizeFormat(ext);
 
   if (source === 'svg') {
@@ -28,7 +29,13 @@ export async function convertFile(file, targetFormat, options = {}) {
       return convertSvg(file, target, options);
     }
     if (target === 'pdf') {
-      return imagesToPdf(file, target);
+      const rasterPng = await convertSvg(file, 'png', options);
+      const intermediateFile = {
+        blob: rasterPng.blob,
+        arrayBuffer: () => rasterPng.blob.arrayBuffer(),
+        name: rasterPng.filename
+      };
+      return imagesToPdf(intermediateFile, target);
     }
   }
 
@@ -67,7 +74,7 @@ export async function convertFile(file, targetFormat, options = {}) {
       return markdownToDocx(file);
     }
     if (target === 'pptx') {
-      return textToPptx(file);
+      return markdownToPptx(file);
     }
   }
 

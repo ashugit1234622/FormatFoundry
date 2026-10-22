@@ -18,5 +18,5 @@ export function getSanitizer() {
 
 export function sanitizeHtml(dirtyHtml, options = {}) {
   const sanitizer = getSanitizer();
-  return sanitizer.sanitize(dirtyHtml, options);
+  return sanitizer.sanitize(dirtyHtml != null ? dirtyHtml : '', options);
 }

@@ -284,6 +284,9 @@ export async function pdfToImages(file, targetFormat = 'png', options = {}) {
 
     await page.render({ canvasContext: ctx, canvas, viewport }).promise;
     const blob = await new Promise((res) => canvas.toBlob(res, mimeType, 0.92));
+    if (!blob) {
+      throw new Error(`Failed to rasterize PDF page ${i} to ${normalizedTarget.toUpperCase()}`);
+    }
     renderedPages.push({
       blob,
       filename: `${baseName}-page-${i}.${ext}`

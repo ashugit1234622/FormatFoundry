@@ -1,5 +1,5 @@
 export function formatBytes(bytes) {
-  if (typeof bytes !== 'number' || Number.isNaN(bytes) || bytes <= 0) {
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes <= 0) {
     return '0 B';
   }
 

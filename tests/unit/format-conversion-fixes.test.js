@@ -6,11 +6,12 @@ const dom = new JSDOM('');
 globalThis.window = dom.window;
 
 import { convertFile } from '../../src/engines/dispatcher.js';
-import { convertCsvOrTsv, convertJsonToDelimited } from '../../src/engines/csv-converter.js';
+import { convertCsvOrTsv, convertJsonToDelimited, csvToJson } from '../../src/engines/csv-converter.js';
 import { parseSvgDimensions, validateAndSanitizeSvg } from '../../src/engines/svg-converter.js';
 import { markdownToHtml } from '../../src/engines/markdown-converter.js';
-import { resolveUniqueFilename } from '../../src/utils/zip.js';
-import { normalizeFormat, formatToExtension } from '../../src/core/filename-utils.js';
+import { resolveUniqueFilename, createZipArchive } from '../../src/utils/zip.js';
+import { normalizeFormat, formatToExtension, generateOutputFilename } from '../../src/core/filename-utils.js';
+import { formatBytes } from '../../src/core/formatters.js';
 
 test('dispatcher: cleanly rejects non-raster formats targeting image formats without attempting image decode', async () => {
   const jsonFile = new File(['[{"a": 1}]'], 'data.json', { type: 'application/json' });
@@ -123,3 +124,32 @@ test('filename-utils: normalizes format aliases and extensions', () => {
   assert.equal(formatToExtension('jpeg'), 'jpg');
   assert.equal(formatToExtension('tsv'), 'tsv');
 });
+
+test('formatBytes: handles non-finite numbers and negative values safely', () => {
+  assert.equal(formatBytes(Infinity), '0 B');
+  assert.equal(formatBytes(-Infinity), '0 B');
+  assert.equal(formatBytes(NaN), '0 B');
+  assert.equal(formatBytes(-100), '0 B');
+  assert.equal(formatBytes(0), '0 B');
+  assert.equal(formatBytes(1024), '1 KB');
+});
+
+test('generateOutputFilename: strips path traversal sequences from output filenames', () => {
+  assert.equal(generateOutputFilename('../../secret.txt', 'pdf'), 'secret.pdf');
+  assert.equal(generateOutputFilename('sub/dir/photo.png', 'jpeg'), 'photo.jpg');
+  assert.equal(generateOutputFilename('C:\\Users\\admin\\doc.docx', 'pdf'), 'doc.pdf');
+});
+
+test('csvToJson: renames dangerous prototype property names to prevent prototype pollution', () => {
+  const maliciousCsv = '__proto__,constructor,prototype,name\npolluted,hacked,tainted,Alice';
+  const result = csvToJson(maliciousCsv);
+  assert.equal(result.length, 1);
+  const row = result[0];
+
+  assert.equal(Object.prototype.polluted, undefined, 'Object.prototype must not be polluted');
+  assert.equal(row.name, 'Alice');
+  assert.equal(row.__proto___col, 'polluted');
+  assert.equal(row.constructor_col, 'hacked');
+  assert.equal(row.prototype_col, 'tainted');
+});
+

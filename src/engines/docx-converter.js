@@ -13,6 +13,18 @@ function prepareMammothOptions(arrayBuffer) {
   return options;
 }
 
+function escapeHtmlText(str) {
+  if (typeof str !== 'string') {
+    return '';
+  }
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function docxToHtml(file) {
   if (!file) {
     throw new Error('No Word document provided for conversion');
@@ -24,7 +36,8 @@ export async function docxToHtml(file) {
   const rawHtml = result.value || '';
   const sanitized = sanitizeHtml(rawHtml);
 
-  const title = (file.name || 'Word Document').replace(/\.[^.]+$/, '');
+  const rawTitle = (file.name || 'Word Document').replace(/\.[^.]+$/, '');
+  const title = escapeHtmlText(rawTitle);
   const fullHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>

@@ -262,4 +262,31 @@ describe('Document Converters — Dispatcher Integration', () => {
     const buffer = Buffer.from(await result.blob.arrayBuffer());
     assert.equal(buffer.subarray(0, 5).toString('ascii'), '%PDF-');
   });
+
+  it('docxToHtml: escapes HTML characters in filename title to prevent XSS', async () => {
+    const docxRes = await textToDocx('Safe Content');
+    const maliciousFile = new File([docxRes.blob], '<script>alert("XSS")</script>.docx', {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    });
+    const htmlRes = await docxToHtml(maliciousFile);
+    const html = await htmlRes.blob.text();
+    assert.ok(!html.includes('<script>alert("XSS")</script>'), 'Raw script tag must not appear in HTML');
+    assert.ok(html.includes('&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;'), 'Title must be HTML entity encoded');
+  });
+
+  it('convertFile: handles Markdown to PowerPoint PPTX conversion', async () => {
+    const file = new File(['# Slide 1\n- Item 1\n- Item 2\n\n# Slide 2\n- Item 3'], 'deck.md', { type: 'text/markdown' });
+    const result = await convertFile(file, 'pptx', { sourceFormat: 'markdown' });
+    assert.ok(result.blob instanceof Blob);
+    assert.equal(result.format, 'pptx');
+    assert.ok(result.filename.endsWith('.pptx'));
+  });
+
+  it('convertFile: handles extensionless files with explicit sourceFormat cleanly', async () => {
+    const file = new File(['# Heading\nBody text'], 'document', { type: 'text/markdown' });
+    const result = await convertFile(file, 'html', { sourceFormat: 'markdown' });
+    assert.ok(result.blob instanceof Blob);
+    assert.equal(result.format, 'html');
+    assert.ok(result.filename.endsWith('.html'));
+  });
 });

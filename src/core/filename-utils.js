@@ -130,7 +130,8 @@ export function generateOutputFilename(originalName, targetFormat) {
 
   const trimmed = originalName.trim();
   const lastDot = trimmed.lastIndexOf('.');
-  const baseName = lastDot > 0 ? trimmed.slice(0, lastDot) : trimmed;
+  const rawBase = lastDot > 0 ? trimmed.slice(0, lastDot) : trimmed;
+  const baseName = rawBase.replace(/^.*[\\/]/, '') || 'converted';
 
   if (normalized === 'json-pretty') {
     return `${baseName}.formatted.json`;
