@@ -173,6 +173,36 @@ function generateToolPageHtml(tool, baseUrl = '') {
     }
   ];
 
+  if (Array.isArray(tool.faqs) && tool.faqs.length > 0) {
+    toolSchema.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: tool.faqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer
+        }
+      }))
+    });
+  }
+
+  if (Array.isArray(tool.howToSteps) && tool.howToSteps.length > 0) {
+    toolSchema.push({
+      '@context': 'https://schema.org',
+      '@type': 'HowTo',
+      name: `How to use ${tool.name}`,
+      description: tool.subtitle || tool.metaDescription,
+      step: tool.howToSteps.map((step, idx) => ({
+        '@type': 'HowToStep',
+        position: idx + 1,
+        name: `Step ${idx + 1}`,
+        text: step
+      }))
+    });
+  }
+
   const jsonLdTag = renderJsonLd(toolSchema);
   const headerHtml = renderHeader(tool.path);
   const footerHtml = renderFooter();

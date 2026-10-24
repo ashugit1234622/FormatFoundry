@@ -57,6 +57,54 @@
         "item": "https://formatfoundry.site/image-inspector/"
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does the inspector detect corrupted files?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "It compares binary header magic bytes against standard specifications and attempts browser bitmap decoding. If the header is invalid or corrupted, it clearly reports that the file cannot be decoded."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I also convert the image while inspecting it?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Staged images remain ready for conversion into PNG, JPG, or WebP while displaying their inspection metadata."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to use Image Inspector & Metadata Tool",
+    "description": "Inspect binary signature formats, pixel dimensions, aspect ratio, decodability, and SVG viewBox coordinates directly in your browser.",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Step 1",
+        "text": "Select or drag PNG, JPEG, WebP, or SVG files into the workspace."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Step 2",
+        "text": "View the detected binary signature, browser MIME type, pixel dimensions, and aspect ratio."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Step 3",
+        "text": "Check browser decodability to verify whether the image file is valid or corrupted."
+      }
+    ]
   }
 ]
 </script>

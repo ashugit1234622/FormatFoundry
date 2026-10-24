@@ -57,6 +57,62 @@
         "item": "https://formatfoundry.site/json-to-csv/"
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What JSON structures can this tool convert to CSV?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "FormatFoundry natively handles four primary JSON structures: (1) an array of flat objects, (2) a single object converted to a 1-row table, (3) wrapper objects containing a record array (such as {\"airports\": [...]}), and (4) an array of primitive values converted into a single-column table with a \"value\" header."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens if a JSON object has an empty key or missing properties?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Empty property names are automatically assigned deterministic fallback headers like \"column_unnamed_1\" with a clear warning so no cell data is lost. Records with missing properties produce empty cells in the appropriate column without shifting subsequent values."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How are commas, line breaks, and quotation marks escaped in the CSV?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "FormatFoundry follows RFC 4180 specifications: any cell containing commas, CRLF/LF line breaks, or double quotes is enclosed in quotation marks, and inner quotes are escaped by doubling them (\"\"). Output is validated with a delimiter parser before completion."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to use JSON to CSV Converter",
+    "description": "Transform JSON array data into standardized Comma-Separated Values (CSV) spreadsheets locally with zero remote uploads.",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Step 1",
+        "text": "Upload a JSON file containing a top-level array of objects, single object, or record array wrapper."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Step 2",
+        "text": "Verify CSV is selected as the target format in the staged item controls."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Step 3",
+        "text": "Click Convert and download your RFC 4180-compliant CSV file."
+      }
+    ]
   }
 ]
 </script>

@@ -57,6 +57,54 @@
         "item": "https://formatfoundry.site/json-formatter/"
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Can I both pretty-print and minify JSON with this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Select \"JSON (Pretty 2-space)\" for readable formatting or \"JSON (Minify)\" to remove all unnecessary whitespace for compact storage."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens if my JSON has syntax errors?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "FormatFoundry validates the JSON and reports the exact syntax issue, preventing malformed data from being saved."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to use JSON Formatter & Validator",
+    "description": "Format unreadable JSON into clean 2-space indented structures or compress it into a compact single-line minified file.",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Step 1",
+        "text": "Drag and drop a JSON file into the conversion workspace."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Step 2",
+        "text": "Choose JSON (Pretty 2-space) or JSON (Minify) from the target dropdown."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Step 3",
+        "text": "Click Convert to format your JSON locally and download the result."
+      }
+    ]
   }
 ]
 </script>

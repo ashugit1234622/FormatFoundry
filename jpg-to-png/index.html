@@ -57,6 +57,54 @@
         "item": "https://formatfoundry.site/jpg-to-png/"
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Will converting JPG to PNG improve image quality?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. PNG is a lossless format, so it will preserve the exact pixels of the source JPEG without adding further artifacts, but it cannot reverse lossy compression already baked into the JPEG."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this converter accept both .jpg and .jpeg extensions?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. FormatFoundry handles .jpg and .jpeg files identically, verifying the actual JFIF/EXIF binary signature to ensure valid image data."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to use JPG to PNG Converter",
+    "description": "Transform compressed JPG images into uncompressed, lossless PNG graphics directly inside your browser sandbox.",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Step 1",
+        "text": "Drop your JPG or JPEG files into the staging workspace."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Step 2",
+        "text": "Confirm PNG is chosen as the target format."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Step 3",
+        "text": "Click Convert to produce lossless PNG files locally."
+      }
+    ]
   }
 ]
 </script>

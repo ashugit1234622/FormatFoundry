@@ -57,6 +57,62 @@
         "item": "https://formatfoundry.site/csv-to-json/"
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does the parser handle empty or duplicate headers in CSV files?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "If a column header is empty but contains row data, FormatFoundry assigns a unique deterministic name like \"column_8\" and displays a non-blocking warning. Unnamed trailing columns with no data in any row are pruned. Duplicate headers are renamed (e.g. \"name_2\") to ensure no data is overwritten."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this converter preserve leading zeros and identifiers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. All cell values are preserved strictly as strings. Identifiers like \"00123\", postal codes, and literal text are never silently coerced to numbers or other JavaScript types."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens if rows have uneven column counts?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "FormatFoundry identifies uneven rows, safely pads missing trailing columns with empty strings so cell alignment is never shifted, and displays a warning listing the specific row numbers."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to use CSV to JSON Converter",
+    "description": "Parse CSV spreadsheets into structured JSON arrays of objects directly inside your browser sandbox with full data privacy.",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Step 1",
+        "text": "Drop your CSV file into the conversion workspace."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Step 2",
+        "text": "Confirm JSON is selected as the output format."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Step 3",
+        "text": "Click Convert to parse and download your structured JSON document."
+      }
+    ]
   }
 ]
 </script>

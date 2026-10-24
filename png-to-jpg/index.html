@@ -57,6 +57,62 @@
         "item": "https://formatfoundry.site/png-to-jpg/"
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What happens to transparent pixels when converting PNG to JPG?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JPEG does not support alpha transparency. FormatFoundry automatically composites any transparent areas onto a clean, solid white background matte before encoding."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are my PNG images uploaded to an external server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All file reading, decoding, canvas compositing, and JPEG encoding execute strictly in your local browser memory using JavaScript and HTML5 Canvas."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I batch convert multiple PNG images to JPG at once?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. You can drag and drop multiple PNG files into the workspace, click Convert All, and download each result individually or bundle them together into a single ZIP archive."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to use PNG to JPG Converter",
+    "description": "Convert PNG images to compressed JPG format directly in your browser with zero server uploads, privacy-first processing, and instant downloads.",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Step 1",
+        "text": "Select or drag and drop one or more PNG files into the upload area."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Step 2",
+        "text": "Confirm JPG is selected as the target format in the staged item controls."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Step 3",
+        "text": "Click Convert to rasterize locally and download the resulting JPG file or a ZIP archive."
+      }
+    ]
   }
 ]
 </script>
