@@ -1,0 +1,225 @@
+{
+  "summary": {
+    "health_score": 79,
+    "business_type": "Web Utility / SaaS Tool",
+    "top_findings": [
+      "Active CSP header blocks Google Fonts and Cloudflare Web Analytics beacon, causing browser console errors on every page load.",
+      "Missing trailing-slash tool paths return HTTP 307 Temporary Redirect instead of HTTP 301 Permanent Redirect, diluting link equity consolidation.",
+      "Google-deprecated HowTo schema and retired FAQPage SERP markup present across all 38 tool routes.",
+      "CSS @import for Google Fonts creates a render-blocking waterfall that delays First Contentful Paint.",
+      "Missing /llms.txt discovery file and structured entity graph linking tools to a verified Organization publisher."
+    ],
+    "quick_wins": [
+      "Self-host Plus Jakarta Sans and JetBrains Mono locally in WOFF2 format to resolve CSP errors and eliminate render-blocking @import.",
+      "Populate public/_redirects with all 38 tool paths mapping non-slash URLs to trailing-slash URLs with 301 status.",
+      "Deploy public/llms.txt to provide AI search engines (Perplexity, ChatGPT, Claude) with structured tool definitions.",
+      "Add <script type=\"speculationrules\"> for instant hover prerendering of high-traffic tools.",
+      "Connect disconnected schema objects into a unified @graph with Organization publisher node."
+    ]
+  },
+  "categories": [
+    {
+      "name": "Technical SEO",
+      "score": 82,
+      "what_works": [
+        "100% pre-rendered semantic HTML with zero client-side rendering blank shell risks",
+        "Valid sitemap.xml with 40 URLs declared in robots.txt",
+        "Self-referencing canonical tags on all published routes",
+        "Cloudflare HTTP/3 and edge compression (zstd/gzip) enabled",
+        "Strict HTTP 404 response on unknown probe URLs"
+      ],
+      "findings": [
+        {
+          "title": "CSP Header Blocks Fonts and Analytics",
+          "severity": "Critical",
+          "description": "CSP header style-src and script-src directives omit fonts.googleapis.com, fonts.gstatic.com, and static.cloudflareinsights.com, throwing console errors and blocking external fonts.",
+          "recommendation": "Self-host fonts locally with WOFF2 and @font-face or update CSP header directives to whitelist required origins."
+        },
+        {
+          "title": "Non-Trailing-Slash URLs Return 307 Temporary Redirect",
+          "severity": "High",
+          "description": "Requesting /png-to-jpg triggers a 307 Temporary Redirect to /png-to-jpg/ instead of a 301 Permanent Redirect.",
+          "recommendation": "Add 301 redirect rules for all 38 tools into public/_redirects."
+        }
+      ]
+    },
+    {
+      "name": "Content Quality & E-E-A-T",
+      "score": 76,
+      "what_works": [
+        "Zero filler or generic AI marketing cliches across all tools",
+        "Accurate technical documentation of client-side browser conversion mechanics",
+        "Clear transparent privacy assurances"
+      ],
+      "findings": [
+        {
+          "title": "Templated Repetitive Language Across 38 Tools",
+          "severity": "Medium",
+          "description": "content_quality.py flagged repetition score of 37 due to shared boilerplate privacy and upload instructions.",
+          "recommendation": "Introduce unique format comparison tables, benchmark matrices, and practical workflow examples per tool."
+        },
+        {
+          "title": "Missing Author Byline & Dedicated About/Privacy Pages",
+          "severity": "High",
+          "description": "Header links for About and Privacy point to short homepage hash fragments; no author entity or cryptographic audit is documented.",
+          "recommendation": "Create dedicated /about/ and /privacy/ pages with engineering background, GitHub repo link, and DevTools privacy verification."
+        }
+      ]
+    },
+    {
+      "name": "On-Page SEO",
+      "score": 88,
+      "what_works": [
+        "Unique descriptive <title> tags on all 40 published routes",
+        "Targeted meta descriptions within 120-160 character boundary",
+        "Strict single <h1> and semantic heading hierarchy",
+        "Visible HTML breadcrumbs and matching JSON-LD BreadcrumbList",
+        "Complete OpenGraph and Twitter card metadata with 1200x630px social image"
+      ],
+      "findings": [
+        {
+          "title": "Internal Link Context Limited to End-of-Page Grid",
+          "severity": "Low",
+          "description": "Internal cross-links between related tools exist only in a footer card grid without inline contextual body links.",
+          "recommendation": "Add contextual cross-references in format conversion explanations (e.g. mention WebP in PNG conversion copy)."
+        }
+      ]
+    },
+    {
+      "name": "Schema / Structured Data",
+      "score": 72,
+      "what_works": [
+        "Valid JSON-LD without syntax errors on every page",
+        "WebApplication schema on all conversion tools",
+        "CollectionPage and ItemList schema on /tools/ directory",
+        "BreadcrumbList schema on all tool pages"
+      ],
+      "findings": [
+        {
+          "title": "Deprecated HowTo Schema Present on All Tools",
+          "severity": "Medium",
+          "description": "Google officially deprecated HowTo rich results in September 2023. Continuing to emit HowTo schema adds payload without SERP benefit.",
+          "recommendation": "Remove HowTo schema block from build-seo-pages.js to save ~1.2 KB JSON-LD per page."
+        },
+        {
+          "title": "Disconnected Schema Objects Without Entity Graph",
+          "severity": "Medium",
+          "description": "JSON-LD emits top-level array of anonymous objects rather than a connected @graph with Organization publisher and @id links.",
+          "recommendation": "Refactor JSON-LD into a unified @graph with Organization, WebSite, and WebApplication entities."
+        }
+      ]
+    },
+    {
+      "name": "Performance (Core Web Vitals)",
+      "score": 78,
+      "what_works": [
+        "Static HTML footprint under 14 KB",
+        "Vite-bundled JavaScript and CSS with cache-busting hashes",
+        "Sub-50ms TTFB across Cloudflare global edge network",
+        "Zero blocking third-party tracking scripts"
+      ],
+      "findings": [
+        {
+          "title": "CSS @import Google Fonts Cascade",
+          "severity": "High",
+          "description": "src/styles/main.css line 1 imports Google Fonts via CSS @import, chaining stylesheet requests and delaying FCP/LCP.",
+          "recommendation": "Self-host font files locally or move stylesheet link to HTML head with preconnect."
+        },
+        {
+          "title": "Zero Modern Preload and Speculation Rules",
+          "severity": "Medium",
+          "description": "Preload audit score was 50/100; no Speculation Rules or resource hints exist for top navigation paths.",
+          "recommendation": "Implement Speculation Rules API on homepage and tools directory for instant prerendering."
+        }
+      ]
+    },
+    {
+      "name": "AI Search Readiness & GEO",
+      "score": 68,
+      "what_works": [
+        "Content completely readable without JavaScript execution (359 words SSR)",
+        "Zero robot disallows for AI search crawlers in robots.txt",
+        "Clear differentiation as zero-upload client-side privacy tool"
+      ],
+      "findings": [
+        {
+          "title": "Missing /llms.txt and /llms-full.txt",
+          "severity": "High",
+          "description": "agentic_check.py returned HTTP 404 for /llms.txt, missing out on direct indexing by AI agents and LLM citation engines.",
+          "recommendation": "Deploy public/llms.txt detailing all 38 tools and client-side processing guarantees."
+        },
+        {
+          "title": "Missing Outbound Authoritative RFC Links",
+          "severity": "Low",
+          "description": "Tool pages lack outbound citations to official specifications (RFC 4180, W3C SVG2) that boost generative authority.",
+          "recommendation": "Add links to IETF and W3C standards on data and SVG tool pages as outlined in PROMOTION.md."
+        }
+      ]
+    },
+    {
+      "name": "Images SEO",
+      "score": 75,
+      "what_works": [
+        "1200x630px high-resolution OpenGraph image verified",
+        "180x180px Apple touch icon and 32x32px PNG favicon configured",
+        "SVG favicon fallback embedded in head"
+      ],
+      "findings": [
+        {
+          "title": "No Illustrative Visual Diagrams on Tool Pages",
+          "severity": "Low",
+          "description": "Tool pages rely solely on text and dropzone containers without visual workflow diagrams or schema ImageObject metadata.",
+          "recommendation": "Add lightweight SVG conversion diagram illustrating before/after format characteristics on key tools."
+        }
+      ]
+    }
+  ],
+  "action_plan": {
+    "phases": [
+      {
+        "name": "Phase 1: Critical Fixes & Technical Consolidation",
+        "timeframe": "Week 1",
+        "items": [
+          "Self-host Google Fonts locally or update CSP headers to eliminate browser console errors and font blocking",
+          "Add 301 trailing-slash redirects for all 38 tools in public/_redirects",
+          "Fix formatfoundry.com references in DEPLOYMENT.md to formatfoundry.site",
+          "Deploy public/llms.txt following the llmstxt.org specification"
+        ]
+      },
+      {
+        "name": "Phase 2: Schema Modernization & Performance Acceleration",
+        "timeframe": "Weeks 2-3",
+        "items": [
+          "Refactor JSON-LD across all pages into a unified @graph with Organization publisher node",
+          "Remove deprecated HowTo schema block from scripts/build-seo-pages.js",
+          "Implement Speculation Rules API on homepage and /tools/ directory",
+          "Increase mobile base body font size to 16px (1rem)"
+        ]
+      },
+      {
+        "name": "Phase 3: Content Authority & E-E-A-T Expansion",
+        "timeframe": "Month 2",
+        "items": [
+          "Create dedicated /about/ and /privacy/ pages with engineering credentials and DevTools privacy verification guide",
+          "Publish the 4 pillar technical articles from PROMOTION.md under /guides/ (RFC 4180, SVG sanitization, etc.)",
+          "Add comparison matrices and format capability tables to all 38 tool landing pages",
+          "Add outbound authoritative links to IETF, W3C, and CommonMark standards"
+        ]
+      },
+      {
+        "name": "Phase 4: Monitoring, Citations & Link Earning",
+        "timeframe": "Ongoing",
+        "items": [
+          "Verify Bing Webmaster Tools and Google Search Console indexation coverage",
+          "Submit FormatFoundry to curated developer privacy directories (Awesome Privacy, AlternativeTo)",
+          "Monitor Core Web Vitals field data (INP, LCP, CLS) in Google Search Console",
+          "Track AI search citations across Perplexity, ChatGPT Search, and Claude"
+        ]
+      }
+    ]
+  },
+  "artifacts": {
+    "findings_dir": "findings/",
+    "screenshots_dir": "screenshots/"
+  }
+}

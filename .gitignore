@@ -5,3 +5,7 @@ dist
 scratch/
 *.mp4
 *_stills.png
+.agents/
+.claude/
+graphify-out/
+
