@@ -86,9 +86,9 @@ function renderFooter() {
           <a href="/" class="footer-link">Home</a>
           <a href="/tools/" class="footer-link">All Tools</a>
           <a href="/#privacy" class="footer-link">Privacy Guarantee</a>
-          <a href="/#about" class="footer-link">Output Guarantee</a>
+          <a href="/#output-guarantee" class="footer-link">Output Guarantee</a>
         </div>
-        <span>Version 0.5.0 (Dedicated Tool Pages)</span>
+        <!-- Version 0.5.0 (Dedicated Tool Pages) -->
       </div>
     </footer>
   `;
@@ -709,12 +709,17 @@ function generateHomepageHtml(baseUrl = '') {
       <section class="intro-section">
         <h1 class="intro-title">Universal client-side file &amp; data converter</h1>
         <p class="intro-subtitle">
-          Convert raster images (PNG, JPEG, WebP), rasterize vector SVGs, transform structured data (JSON, CSV, TSV), and compile sanitized Markdown directly inside your browser. All processing executes in local memory with zero remote uploads, zero analytics tracking, and no external servers.
+          Convert images, rasterize vector SVGs, process PDF, Word, and PowerPoint documents, convert HTML, transform structured data (JSON, CSV, TSV), and compile Markdown directly inside your browser. All file conversion executes via private local processing in memory with zero remote uploads.
         </p>
       </section>
 
       <section class="workspace-section" id="workspace" aria-labelledby="workspace-heading">
         <h2 id="workspace-heading" class="sr-only">Conversion Workspace</h2>
+        <noscript>
+          <div class="info-panel" style="text-align: center;">
+            <p class="info-text">JavaScript is required to use the conversion workspace. Please enable JavaScript in your browser to convert files locally.</p>
+          </div>
+        </noscript>
         <div id="dropzone" class="dropzone" tabindex="0" role="region" aria-label="File upload dropzone"></div>
         <div id="staged-container"></div>
       </section>
@@ -740,7 +745,14 @@ function generateHomepageHtml(baseUrl = '') {
       </section>
 
       <section class="info-panel" id="about">
-        <h2 class="info-title">Honest Output Guarantees</h2>
+        <h2 class="info-title">About</h2>
+        <p class="info-text">
+          FormatFoundry is a client-side file and data converter providing private, browser-based conversions across 38 tool pairs. All processing executes in local memory with zero remote file uploads.
+        </p>
+      </section>
+
+      <section class="info-panel" id="output-guarantee">
+        <h2 class="info-title">Output Guarantee</h2>
         <p class="info-text">
           Conversions preserve structural integrity. Raster images maintain exact pixel dimensions. JSON formatting enforces clean two-space indentation or minification. Delimited data conversions strictly preserve string values without unintended type coercion. Markdown compiles to valid, sanitized HTML.
         </p>

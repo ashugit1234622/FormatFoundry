@@ -9,3 +9,9 @@ scratch/
 .claude/
 graphify-out/
 
+# Environment files
+.env
+.env.*
+!.env.example
+
+
